@@ -21,11 +21,17 @@ func (vc *VmwareSource) syncTags(nbi *inventory.NetboxInventory) error {
 	objectNames2NBTags := make(map[string][]*objects.Tag)
 	for objectName, tags := range vc.Object2Tags {
 		for _, tag := range tags {
+			var description string
+			if tag.Description != "" {
+				description = fmt.Sprintf("Tag synced from vmware:%s", tag.Description)
+			} else {
+				description = "Tag synced from vmware"
+			}
 			nbTag, err := nbi.AddTag(vc.Ctx, &objects.Tag{
 				Name:        tag.Name,
 				Slug:        utils.Slugify(tag.Name),
 				Color:       constants.ColorGreen,
-				Description: fmt.Sprintf("Tag synced from vmware:%s", tag.Description),
+				Description: description,
 			})
 			if err != nil {
 				return fmt.Errorf("add tag %+v: %s", tag, err)
