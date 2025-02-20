@@ -579,7 +579,7 @@ func (vc *VmwareSource) collectHostPhysicalNicData(
 					vlanIDMap[portgroupData.vlanID] = vlan
 				}
 			} else {
-				vlanName := fmt.Sprintf("VLAN%04d_%s", portgroupData.vlanID, portgroupName)
+				vlanName := portgroupName
 				vlanSite, err := common.MatchVlanToSite(vc.Ctx, nbi, vlanName, vc.SourceConfig.VlanSiteRelations)
 				if err != nil {
 					return nil, "", fmt.Errorf("match vlan to site: %s", err)
