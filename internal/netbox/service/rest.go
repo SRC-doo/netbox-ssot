@@ -124,7 +124,7 @@ func Patch[T any](
 		ctx,
 		"Patching %T with path %s with data: %v",
 		dummy,
-		objectPath,
+		path,
 		body,
 	)
 
