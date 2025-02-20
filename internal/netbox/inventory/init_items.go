@@ -946,15 +946,13 @@ func (nbi *NetboxInventory) initIPAddresses(ctx context.Context) error {
 	)
 	for i := range ipAddresses {
 		ipAddr := &ipAddresses[i]
-		if ipAddr.HasTag(nbi.SsotTag) {
-			ifaceType, ifaceName, ifaceParentName, err := nbi.getIndexValuesForIPAddress(ipAddr)
-			if err != nil {
-				return fmt.Errorf("get index values for ip address: %s", err)
-			}
-			nbi.verifyIPAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
-			nbi.ipAddressesIndex[ifaceType][ifaceName][ifaceParentName][ipAddr.Address] = ipAddr
-			nbi.OrphanManager.AddItem(ipAddr)
+		ifaceType, ifaceName, ifaceParentName, err := nbi.getIndexValuesForIPAddress(ipAddr)
+		if err != nil {
+			return fmt.Errorf("get index values for ip address: %s", err)
 		}
+		nbi.verifyIPAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
+		nbi.ipAddressesIndex[ifaceType][ifaceName][ifaceParentName][ipAddr.Address] = ipAddr
+		nbi.OrphanManager.AddItem(ipAddr)
 	}
 
 	nbi.Logger.Debug(
@@ -980,17 +978,15 @@ func (nbi *NetboxInventory) initMACAddresses(ctx context.Context) error {
 	)
 	for i := range nbMACAddresses {
 		macAddress := &nbMACAddresses[i]
-		if macAddress.HasTag(nbi.SsotTag) {
-			ifaceType, ifaceName, ifaceParentName, err := nbi.getIndexValuesForMACAddress(
-				macAddress,
-			)
-			if err != nil {
-				return fmt.Errorf("get index values for mac address: %s", err)
-			}
-			nbi.verifyMACAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
-			nbi.macAddressesIndex[ifaceType][ifaceName][ifaceParentName][macAddress.MAC] = macAddress
-			nbi.OrphanManager.AddItem(macAddress)
+		ifaceType, ifaceName, ifaceParentName, err := nbi.getIndexValuesForMACAddress(
+			macAddress,
+		)
+		if err != nil {
+			return fmt.Errorf("get index values for mac address: %s", err)
 		}
+		nbi.verifyMACAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
+		nbi.macAddressesIndex[ifaceType][ifaceName][ifaceParentName][macAddress.MAC] = macAddress
+		nbi.OrphanManager.AddItem(macAddress)
 	}
 
 	nbi.Logger.Debug(
