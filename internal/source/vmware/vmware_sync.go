@@ -1067,7 +1067,7 @@ func (vc *VmwareSource) syncVM(
 			vmDiskSizeB += disk.CapacityInBytes
 		}
 	}
-	vmDiskSizeMiB := vmDiskSizeB / constants.MiB
+	vmDiskSizeMiB := vmDiskSizeB / constants.GiB * constants.KB
 
 	// Determine guest OS using fallback mechanisms
 	var platformName string
