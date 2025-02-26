@@ -1171,6 +1171,7 @@ func (nbi *NetboxInventory) AddVM(ctx context.Context, newVM *objects.VM) (*obje
 			)
 			patchedVM, err := service.Patch[objects.VM](ctx, nbi.NetboxAPI, oldVM.ID, diffMap)
 			if err != nil {
+				nbi.Logger.Errorf(ctx, "Error while patching %s : %s", newVM.Name, err)
 				return nil, err
 			}
 			nbi.vmsIndexByNameAndClusterID[newVM.Name][newVMClusterID] = patchedVM
