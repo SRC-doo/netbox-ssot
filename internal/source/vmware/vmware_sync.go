@@ -644,7 +644,9 @@ func (vc *VmwareSource) collectHostPhysicalNicData(
 		}
 	}
 
-	pnicType := objects.IfaceSpeed2IfaceType[objects.InterfaceSpeed(pnicLinkSpeedMb)]
+	pnicLinkSpeedKb := pnicLinkSpeedMb * constants.KB
+	pnicType := objects.IfaceSpeed2IfaceType[objects.InterfaceSpeed(pnicLinkSpeedKb)]
+
 	if pnicType == nil {
 		pnicType = &objects.OtherInterfaceType
 	}
@@ -660,7 +662,7 @@ func (vc *VmwareSource) collectHostPhysicalNicData(
 		Name:        pnicName,
 		Status:      true,
 		Type:        pnicType,
-		Speed:       objects.InterfaceSpeed(pnicLinkSpeedMb / constants.KB),
+		Speed:       objects.InterfaceSpeed(pnicLinkSpeedKb),
 		MTU:         pnicMtu,
 		Mode:        pnicMode,
 		TaggedVlans: taggedVlanList,
