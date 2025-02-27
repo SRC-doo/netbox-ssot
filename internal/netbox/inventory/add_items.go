@@ -22,22 +22,17 @@ func (nbi *NetboxInventory) AddTag(ctx context.Context, newTag *objects.Tag) (*o
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Tag ",
-				newTag.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Tag %s already exists in Netbox but is out of date. Patching it... ", newTag.Name)
 			patchedTag, err := service.Patch[objects.Tag](ctx, nbi.NetboxAPI, oldTag.ID, diffMap)
 			if err != nil {
 				return nil, err
 			}
 			nbi.tagsIndexByName[newTag.Name] = patchedTag
 		} else {
-			nbi.Logger.Debug(ctx, "Tag ", newTag.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Tag %s already exists in Netbox and is up to date...", newTag.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Tag ", newTag.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Tag %s does not exist in Netbox. Creating it...", newTag.Name)
 		createdTag, err := service.Create(ctx, nbi.NetboxAPI, newTag)
 		if err != nil {
 			return nil, err
@@ -62,12 +57,7 @@ func (nbi *NetboxInventory) AddTenant(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Tenant ",
-				newTenant.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Tenant %s already exists in Netbox but is out of date. Patching it...", newTenant.Name)
 			patchedTenant, err := service.Patch[objects.Tenant](
 				ctx,
 				nbi.NetboxAPI,
@@ -79,10 +69,10 @@ func (nbi *NetboxInventory) AddTenant(
 			}
 			nbi.tenantsIndexByName[newTenant.Name] = patchedTenant
 		} else {
-			nbi.Logger.Debug(ctx, "Tenant ", newTenant.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Tenant %s already exists in Netbox and is up to date...", newTenant.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Tenant ", newTenant.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Tenant %s does not exist in Netbox. Creating it...", newTenant.Name)
 		createdTag, err := service.Create(ctx, nbi.NetboxAPI, newTenant)
 		if err != nil {
 			return nil, err
@@ -107,12 +97,7 @@ func (nbi *NetboxInventory) AddSite(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Site ",
-				newSite.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Site %s already exists in Netbox but is out of date. Patching it... ", newSite.Name)
 			patchedSite, err := service.Patch[objects.Site](ctx, nbi.NetboxAPI, oldSite.ID, diffMap)
 			if err != nil {
 				return nil, err
@@ -122,7 +107,7 @@ func (nbi *NetboxInventory) AddSite(
 			nbi.Logger.Debugf(ctx, "Site %s already exists in Netbox and is up to date...", newSite.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Site ", newSite.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Site %s does not exist in Netbox. Creating it...", newSite.Name)
 		createdContact, err := service.Create(ctx, nbi.NetboxAPI, newSite)
 		if err != nil {
 			return nil, err
@@ -152,11 +137,7 @@ func (nbi *NetboxInventory) AddSiteGroup(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debugf(
-				ctx,
-				"SiteGroup %s already exists in Netbox but is out of date. Patching it...",
-				newSiteGroup.Name,
-			)
+			nbi.Logger.Debugf(ctx, "SiteGroup %s already exists in Netbox but is out of date. Patching it...", newSiteGroup.Name)
 			patchedSiteGroup, err := service.Patch[objects.SiteGroup](
 				ctx,
 				nbi.NetboxAPI,
@@ -202,12 +183,7 @@ func (nbi *NetboxInventory) AddContactRole(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Contact role ",
-				newContactRole.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Contact role %s already exists in Netbox but is out of date. Patching it...", newContactRole.Name)
 			patchedContactRole, err := service.Patch[objects.ContactRole](
 				ctx,
 				nbi.NetboxAPI,
@@ -219,10 +195,10 @@ func (nbi *NetboxInventory) AddContactRole(
 			}
 			nbi.contactRolesIndexByName[newContactRole.Name] = patchedContactRole
 		} else {
-			nbi.Logger.Debug(ctx, "Contact role ", newContactRole.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Contact role %s already exists in Netbox and is up to date...", newContactRole.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Contact role ", newContactRole.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Contact role %s does not exist in Netbox. Creating it...", newContactRole.Name)
 		newContactRole, err := service.Create(ctx, nbi.NetboxAPI, newContactRole)
 		if err != nil {
 			return nil, err
@@ -252,12 +228,7 @@ func (nbi *NetboxInventory) AddContactGroup(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Contact group ",
-				newContactGroup.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Contact group %s already exists in Netbox but is out of date. Patching it...", newContactGroup.Name)
 			patchedContactGroup, err := service.Patch[objects.ContactGroup](
 				ctx,
 				nbi.NetboxAPI,
@@ -269,10 +240,10 @@ func (nbi *NetboxInventory) AddContactGroup(
 			}
 			nbi.contactGroupsIndexByName[newContactGroup.Name] = patchedContactGroup
 		} else {
-			nbi.Logger.Debug(ctx, "Contact group ", newContactGroup.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Contact group %s already exists in Netbox and is up to date...", newContactGroup.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Contact group ", newContactGroup.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Contact group %s does not exist in Netbox. Creating it...", newContactGroup.Name)
 		newContactGroup, err := service.Create(ctx, nbi.NetboxAPI, newContactGroup)
 		if err != nil {
 			return nil, err
@@ -299,12 +270,7 @@ func (nbi *NetboxInventory) AddContact(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Contact ",
-				newContact.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Contact %s already exists in Netbox but is out of date. Patching it...", newContact.Name)
 			patchedContact, err := service.Patch[objects.Contact](
 				ctx,
 				nbi.NetboxAPI,
@@ -316,10 +282,10 @@ func (nbi *NetboxInventory) AddContact(
 			}
 			nbi.contactsIndexByName[newContact.Name] = patchedContact
 		} else {
-			nbi.Logger.Debug(ctx, "Contact ", newContact.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Contact %s already exists in Netbox and is up to date...", newContact.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Contact ", newContact.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Contact %s does not exist in Netbox. Creating it...", newContact.Name)
 		createdContact, err := service.Create(ctx, nbi.NetboxAPI, newContact)
 		if err != nil {
 			return nil, err
@@ -363,12 +329,7 @@ func (nbi *NetboxInventory) AddContactAssignment(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"ContactAssignment ",
-				newCA.ID,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "ContactAssignment %d already exists in Netbox but is out of date. Patching it...", newCA.ID)
 			patchedCA, err := service.Patch[objects.ContactAssignment](
 				ctx,
 				nbi.NetboxAPI,
@@ -380,7 +341,7 @@ func (nbi *NetboxInventory) AddContactAssignment(
 			}
 			nbi.contactAssignmentsIndex[newCA.ModelType][newCA.ObjectID][newCA.Contact.ID][newCA.Role.ID] = patchedCA
 		} else {
-			nbi.Logger.Debug(ctx, "ContactAssignment ", newCA.ID, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "ContactAssignment %d already exists in Netbox and is up to date...", newCA.ID)
 		}
 	} else {
 		nbi.Logger.Debugf(ctx, "ContactAssignment %s does not exist in Netbox. Creating it...", newCA)
@@ -411,12 +372,7 @@ func (nbi *NetboxInventory) AddCustomField(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Custom field ",
-				newCf.Name,
-				" already exists in Netbox but is out of date. Patching it... ",
-			)
+			nbi.Logger.Debugf(ctx, "Custom field %s already exists in Netbox but is out of date. Patching it...", newCf.Name)
 			patchedCf, err := service.Patch[objects.CustomField](
 				ctx,
 				nbi.NetboxAPI,
@@ -428,10 +384,10 @@ func (nbi *NetboxInventory) AddCustomField(
 			}
 			nbi.customFieldsIndexByName[newCf.Name] = patchedCf
 		} else {
-			nbi.Logger.Debug(ctx, "Custom field ", newCf.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Custom field %s already exists in Netbox and is up to date...", newCf.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Custom field ", newCf.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Custom field %s does not exist in Netbox. Creating it...", newCf.Name)
 		createdCf, err := service.Create(ctx, nbi.NetboxAPI, newCf)
 		if err != nil {
 			return nil, err
@@ -463,12 +419,7 @@ func (nbi *NetboxInventory) AddClusterGroup(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Cluster group ",
-				newCg.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Cluster group %s already exists in Netbox but is out of date. Patching it...", newCg.Name)
 			patchedCg, err := service.Patch[objects.ClusterGroup](
 				ctx,
 				nbi.NetboxAPI,
@@ -480,10 +431,10 @@ func (nbi *NetboxInventory) AddClusterGroup(
 			}
 			nbi.clusterGroupsIndexByName[newCg.Name] = patchedCg
 		} else {
-			nbi.Logger.Debug(ctx, "Cluster group ", newCg.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Cluster group %s already exists in Netbox and is up to date...", newCg.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Cluster group ", newCg.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Cluster group %s does not exist in Netbox. Creating it...", newCg.Name)
 		newCg, err := service.Create(ctx, nbi.NetboxAPI, newCg)
 		if err != nil {
 			return nil, err
@@ -521,12 +472,7 @@ func (nbi *NetboxInventory) AddClusterType(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Cluster type ",
-				newClusterType.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Cluster type %s already exists in Netbox but is out of date. Patching it...", newClusterType.Name)
 			patchedClusterType, err := service.Patch[objects.ClusterType](
 				ctx,
 				nbi.NetboxAPI,
@@ -539,21 +485,11 @@ func (nbi *NetboxInventory) AddClusterType(
 			nbi.clusterTypesIndexByName[newClusterType.Name] = patchedClusterType
 			return patchedClusterType, nil
 		}
-		nbi.Logger.Debug(
-			ctx,
-			"Cluster type ",
-			newClusterType.Name,
-			" already exists in Netbox and is up to date...",
-		)
+		nbi.Logger.Debugf(ctx, "Cluster type %s already exists in Netbox and is up to date...", newClusterType.Name)
 		existingClusterType := nbi.clusterTypesIndexByName[newClusterType.Name]
 		return existingClusterType, nil
 	}
-	nbi.Logger.Debug(
-		ctx,
-		"Cluster type ",
-		newClusterType.Name,
-		" does not exist in Netbox. Creating it...",
-	)
+	nbi.Logger.Debugf(ctx, "Cluster type %s does not exist in Netbox. Creating it...", newClusterType.Name)
 	newClusterType, err := service.Create(ctx, nbi.NetboxAPI, newClusterType)
 	if err != nil {
 		return nil, err
@@ -586,12 +522,7 @@ func (nbi *NetboxInventory) AddCluster(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Cluster ",
-				newCluster.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Cluster %s already exists in Netbox but is out of date. Patching it...", newCluster.Name)
 			patchedCluster, err := service.Patch[objects.Cluster](
 				ctx,
 				nbi.NetboxAPI,
@@ -603,10 +534,10 @@ func (nbi *NetboxInventory) AddCluster(
 			}
 			nbi.clustersIndexByName[newCluster.Name] = patchedCluster
 		} else {
-			nbi.Logger.Debug(ctx, "Cluster ", newCluster.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Cluster %s already exists in Netbox and is up to date...", newCluster.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Cluster ", newCluster.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Cluster %s does not exist in Netbox. Creating it...", newCluster.Name)
 		createdCluster, err := service.Create(ctx, nbi.NetboxAPI, newCluster)
 		if err != nil {
 			return nil, err
@@ -643,12 +574,7 @@ func (nbi *NetboxInventory) AddDeviceRole(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Device role ",
-				newDeviceRole.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Device role %s already exists in Netbox but is out of date. Patching it...", newDeviceRole.Name)
 			patchedDeviceRole, err := service.Patch[objects.DeviceRole](
 				ctx,
 				nbi.NetboxAPI,
@@ -660,10 +586,10 @@ func (nbi *NetboxInventory) AddDeviceRole(
 			}
 			nbi.deviceRolesIndexByName[newDeviceRole.Name] = patchedDeviceRole
 		} else {
-			nbi.Logger.Debug(ctx, "Device role ", newDeviceRole.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Device role %s already exists in Netbox and is up to date...", newDeviceRole.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Device role ", newDeviceRole.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Device role %s does not exist in Netbox. Creating it...", newDeviceRole.Name)
 		newDeviceRole, err := service.Create(ctx, nbi.NetboxAPI, newDeviceRole)
 		if err != nil {
 			return nil, err
@@ -701,12 +627,7 @@ func (nbi *NetboxInventory) AddManufacturer(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Manufacturer ",
-				newManufacturer.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Manufacturer %s already exists in Netbox but is out of date. Patching it...", newManufacturer.Name)
 			patchedManufacturer, err := service.Patch[objects.Manufacturer](
 				ctx,
 				nbi.NetboxAPI,
@@ -718,10 +639,10 @@ func (nbi *NetboxInventory) AddManufacturer(
 			}
 			nbi.manufacturersIndexByName[newManufacturer.Name] = patchedManufacturer
 		} else {
-			nbi.Logger.Debug(ctx, "Manufacturer ", newManufacturer.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Manufacturer %s already exists in Netbox and is up to date...", newManufacturer.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Manufacturer ", newManufacturer.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Manufacturer %s does not exist in Netbox. Creating it...", newManufacturer.Name)
 		newManufacturer, err := service.Create(ctx, nbi.NetboxAPI, newManufacturer)
 		if err != nil {
 			return nil, err
@@ -757,12 +678,7 @@ func (nbi *NetboxInventory) AddDeviceType(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Device type ",
-				newDeviceType.Model,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Device type %s already exists in Netbox but is out of date. Patching it...", newDeviceType.Model)
 			patchedDeviceType, err := service.Patch[objects.DeviceType](
 				ctx,
 				nbi.NetboxAPI,
@@ -774,10 +690,10 @@ func (nbi *NetboxInventory) AddDeviceType(
 			}
 			nbi.deviceTypesIndexByModel[newDeviceType.Model] = patchedDeviceType
 		} else {
-			nbi.Logger.Debug(ctx, "Device type ", newDeviceType.Model, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Device type %s already exists in Netbox and is up to date...", newDeviceType.Model)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Device type ", newDeviceType.Model, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Device type %s does not exist in Netbox. Creating it...", newDeviceType.Model)
 		newDeviceType, err := service.Create(ctx, nbi.NetboxAPI, newDeviceType)
 		if err != nil {
 			return nil, err
@@ -814,12 +730,7 @@ func (nbi *NetboxInventory) AddPlatform(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Platform ",
-				newPlatform.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Platform %s already exists in Netbox but is out of date. Patching it...", newPlatform.Name)
 			patchedPlatform, err := service.Patch[objects.Platform](
 				ctx,
 				nbi.NetboxAPI,
@@ -831,10 +742,10 @@ func (nbi *NetboxInventory) AddPlatform(
 			}
 			nbi.platformsIndexByName[newPlatform.Name] = patchedPlatform
 		} else {
-			nbi.Logger.Debug(ctx, "Platform ", newPlatform.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Platform %s already exists in Netbox and is up to date...", newPlatform.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Platform ", newPlatform.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Platform %s does not exist in Netbox. Creating it...", newPlatform.Name)
 		newPlatform, err := service.Create(ctx, nbi.NetboxAPI, newPlatform)
 		if err != nil {
 			return nil, err
@@ -870,12 +781,7 @@ func (nbi *NetboxInventory) AddDevice(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Device ",
-				newDevice.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Device %s already exists in Netbox but is out of date. Patching it...", newDevice.Name)
 			patchedDevice, err := service.Patch[objects.Device](
 				ctx,
 				nbi.NetboxAPI,
@@ -888,10 +794,10 @@ func (nbi *NetboxInventory) AddDevice(
 			nbi.devicesIndexByNameAndSiteID[newDevice.Name][newDevice.Site.ID] = patchedDevice
 			nbi.devicesIndexByID[patchedDevice.ID] = patchedDevice
 		} else {
-			nbi.Logger.Debug(ctx, "Device ", newDevice.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Device %s already exists in Netbox and is up to date...", newDevice.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Device ", newDevice.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Device %s does not exist in Netbox. Creating it...", newDevice.Name)
 		newDevice, err := service.Create(ctx, nbi.NetboxAPI, newDevice)
 		if err != nil {
 			return nil, err
@@ -920,10 +826,7 @@ func (nbi *NetboxInventory) AddVirtualDeviceContext(
 	nbi.virtualDeviceContextsLock.Lock()
 	defer nbi.virtualDeviceContextsLock.Unlock()
 	if newVDC.Device == nil {
-		return nil, fmt.Errorf(
-			"VirtualDeviceContext %s is not assigned to a device, but it should be",
-			newVDC,
-		)
+		return nil, fmt.Errorf("VirtualDeviceContext %s is not assigned to a device, but it should be", newVDC)
 	}
 	if _, ok := nbi.virtualDeviceContextsIndex[newVDC.Name][newVDC.Device.ID]; ok {
 		oldVDC := nbi.virtualDeviceContextsIndex[newVDC.Name][newVDC.Device.ID]
@@ -933,12 +836,7 @@ func (nbi *NetboxInventory) AddVirtualDeviceContext(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"VirtualDeviceContext ",
-				newVDC.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "VirtualDeviceContext %s already exists in Netbox but is out of date. Patching it...", newVDC.Name)
 			patchedVDC, err := service.Patch[objects.VirtualDeviceContext](
 				ctx,
 				nbi.NetboxAPI,
@@ -950,10 +848,10 @@ func (nbi *NetboxInventory) AddVirtualDeviceContext(
 			}
 			nbi.virtualDeviceContextsIndex[newVDC.Name][newVDC.Device.ID] = patchedVDC
 		} else {
-			nbi.Logger.Debug(ctx, "VirtualDeviceContext ", newVDC.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "VirtualDeviceContext %s already exists in Netbox and is up to date...", newVDC.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "VirtualDeviceContext ", newVDC.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "VirtualDeviceContext %s does not exist in Netbox. Creating it...", newVDC.Name)
 		newDevice, err := service.Create(ctx, nbi.NetboxAPI, newVDC)
 		if err != nil {
 			return nil, err
@@ -993,12 +891,7 @@ func (nbi *NetboxInventory) AddVlanGroup(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"VlanGroup ",
-				newVlanGroup.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "VlanGroup %s already exists in Netbox but is out of date. Patching it...", newVlanGroup.Name)
 			patchedVlanGroup, err := service.Patch[objects.VlanGroup](
 				ctx,
 				nbi.NetboxAPI,
@@ -1010,10 +903,10 @@ func (nbi *NetboxInventory) AddVlanGroup(
 			}
 			nbi.vlanGroupsIndexByName[newVlanGroup.Name] = patchedVlanGroup
 		} else {
-			nbi.Logger.Debug(ctx, "Vlan ", newVlanGroup.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Vlan %s already exists in Netbox and is up to date...", newVlanGroup.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Vlan ", newVlanGroup.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Vlan %s does not exist in Netbox. Creating it...", newVlanGroup.Name)
 		newVlan, err := service.Create(ctx, nbi.NetboxAPI, newVlanGroup)
 		if err != nil {
 			return nil, err
@@ -1045,22 +938,17 @@ func (nbi *NetboxInventory) AddVlan(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Vlan ",
-				newVlan.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Vlan %s already exists in Netbox but is out of date. Patching it...", newVlan.Name)
 			patchedVlan, err := service.Patch[objects.Vlan](ctx, nbi.NetboxAPI, oldVlan.ID, diffMap)
 			if err != nil {
 				return nil, err
 			}
 			nbi.vlansIndexByVlanGroupIDAndVID[newVlan.Group.ID][newVlan.Vid] = patchedVlan
 		} else {
-			nbi.Logger.Debug(ctx, "Vlan ", newVlan.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Vlan %s already exists in Netbox and is up to date...", newVlan.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Vlan ", newVlan.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Vlan %s does not exist in Netbox. Creating it...", newVlan.Name)
 		newVlan, err := service.Create(ctx, nbi.NetboxAPI, newVlan)
 		if err != nil {
 			return nil, err
@@ -1103,12 +991,7 @@ func (nbi *NetboxInventory) AddInterface(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Interface ",
-				newInterface.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Interface %s/%s already exists in Netbox but is out of date. Patching it...", newInterface.Device.Name, newInterface.Name)
 			patchedInterface, err := service.Patch[objects.Interface](
 				ctx,
 				nbi.NetboxAPI,
@@ -1121,10 +1004,10 @@ func (nbi *NetboxInventory) AddInterface(
 			nbi.interfacesIndexByDeviceIDAndName[newInterface.Device.ID][newInterface.Name] = patchedInterface
 			nbi.interfacesIndexByID[patchedInterface.ID] = patchedInterface
 		} else {
-			nbi.Logger.Debug(ctx, "Interface ", newInterface.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "Interface %s/%s already exists in Netbox and is up to date...", newInterface.Device.Name, newInterface.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "Interface ", newInterface.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "Interface %s/%s does not exist in Netbox. Creating it...", newInterface.Device.Name, newInterface.Name)
 		newInterface, err := service.Create(ctx, nbi.NetboxAPI, newInterface)
 		if err != nil {
 			return nil, err
@@ -1164,11 +1047,7 @@ func (nbi *NetboxInventory) AddVM(ctx context.Context, newVM *objects.VM) (*obje
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debugf(
-				ctx,
-				"%s already exists in Netbox but is out of date. Patching it...",
-				newVM,
-			)
+			nbi.Logger.Debugf(ctx, "VM %s already exists in Netbox but is out of date. Patching it...", newVM)
 			patchedVM, err := service.Patch[objects.VM](ctx, nbi.NetboxAPI, oldVM.ID, diffMap)
 			if err != nil {
 				nbi.Logger.Errorf(ctx, "Error while patching %s : %s", newVM.Name, err)
@@ -1177,10 +1056,10 @@ func (nbi *NetboxInventory) AddVM(ctx context.Context, newVM *objects.VM) (*obje
 			nbi.vmsIndexByNameAndClusterID[newVM.Name][newVMClusterID] = patchedVM
 			nbi.vmsIndexByID[patchedVM.ID] = patchedVM
 		} else {
-			nbi.Logger.Debugf(ctx, "%s already exists in Netbox and is up to date...", newVM)
+			nbi.Logger.Debugf(ctx, "VM %s already exists in Netbox and is up to date...", newVM)
 		}
 	} else {
-		nbi.Logger.Debugf(ctx, "%s does not exist in Netbox. Creating it...", newVM)
+		nbi.Logger.Debugf(ctx, "VM %s does not exist in Netbox. Creating it...", newVM)
 		newVM, err := service.Create(ctx, nbi.NetboxAPI, newVM)
 		if err != nil {
 			return nil, err
@@ -1225,12 +1104,7 @@ func (nbi *NetboxInventory) AddVMInterface(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"VM interface ",
-				newVMInterface.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "VM interface %s already exists in Netbox but is out of date. Patching it...", newVMInterface.Name)
 			patchedVMInterface, err := service.Patch[objects.VMInterface](
 				ctx,
 				nbi.NetboxAPI,
@@ -1243,10 +1117,10 @@ func (nbi *NetboxInventory) AddVMInterface(
 			nbi.vmInterfacesIndexByVMIdAndName[newVMInterface.VM.ID][newVMInterface.Name] = patchedVMInterface
 			nbi.vmInterfacesIndexByID[patchedVMInterface.ID] = patchedVMInterface
 		} else {
-			nbi.Logger.Debug(ctx, "VM interface ", newVMInterface.Name, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "VM interface %s already exists in Netbox and is up to date...", newVMInterface.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "VM interface ", newVMInterface.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "VM interface %s does not exist in Netbox. Creating it...", newVMInterface.Name)
 		newVMInterface, err := service.Create(ctx, nbi.NetboxAPI, newVMInterface)
 		if err != nil {
 			return nil, err
@@ -1297,11 +1171,7 @@ func (nbi *NetboxInventory) AddIPAddress(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debugf(
-				ctx,
-				"IP address %s already exists in Netbox but is out of date. Patching it...",
-				newIPAddress.Address,
-			)
+			nbi.Logger.Debugf(ctx, "IP address %s already exists in Netbox but is out of date. Patching it...", newIPAddress.Address)
 			patchedIPAddress, err := service.Patch[objects.IPAddress](
 				ctx,
 				nbi.NetboxAPI,
@@ -1314,17 +1184,9 @@ func (nbi *NetboxInventory) AddIPAddress(
 			nbi.ipAddressesIndex[objType][objName][ifaceName][newIPAddress.Address] = patchedIPAddress
 			return patchedIPAddress, nil
 		}
-		nbi.Logger.Debugf(
-			ctx,
-			"IP address %s already exists in Netbox and is up to date...",
-			newIPAddress.Address,
-		)
+		nbi.Logger.Debugf(ctx, "IP address %s already exists in Netbox and is up to date...", newIPAddress.Address)
 	} else {
-		nbi.Logger.Debugf(
-			ctx,
-			"IP address %s does not exist in Netbox. Creating it...",
-			newIPAddress.Address,
-		)
+		nbi.Logger.Debugf(ctx, "IP address %s does not exist in Netbox. Creating it...", newIPAddress.Address)
 		newIPAddress, err := service.Create(ctx, nbi.NetboxAPI, newIPAddress)
 		if err != nil {
 			return nil, err
@@ -1376,11 +1238,7 @@ func (nbi *NetboxInventory) AddMACAddress(
 		}
 
 		if len(diffMap) > 0 {
-			nbi.Logger.Debugf(
-				ctx,
-				"MAC address %s already exists in Netbox but is out of date. Patching it...",
-				newMACAddress.MAC,
-			)
+			nbi.Logger.Debugf(ctx, "MAC address %s already exists in Netbox but is out of date. Patching it...", newMACAddress.MAC)
 			patchedMACAddress, err := service.Patch[objects.MACAddress](
 				ctx,
 				nbi.NetboxAPI,
@@ -1393,11 +1251,7 @@ func (nbi *NetboxInventory) AddMACAddress(
 			nbi.macAddressesIndex[objType][objName][ifaceName][newMACAddress.MAC] = patchedMACAddress
 			return patchedMACAddress, nil
 		}
-		nbi.Logger.Debugf(
-			ctx,
-			"MAC address %s already exists in Netbox and is up to date...",
-			newMACAddress.MAC,
-		)
+		nbi.Logger.Debugf(ctx, "MAC address %s already exists in Netbox and is up to date...", newMACAddress.MAC)
 	} else {
 		nbi.Logger.Debugf(ctx, "MAC address %s does not exist in Netbox. Creating it...", newMACAddress.MAC)
 		newMACAddress, err := service.Create(ctx, nbi.NetboxAPI, newMACAddress)
@@ -1437,12 +1291,7 @@ func (nbi *NetboxInventory) AddPrefix(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"Prefix ",
-				newPrefix.Prefix,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "Prefix %s already exists in Netbox but is out of date. Patching it...", newPrefix.Prefix)
 			patchedPrefix, err := service.Patch[objects.Prefix](
 				ctx,
 				nbi.NetboxAPI,
@@ -1454,10 +1303,10 @@ func (nbi *NetboxInventory) AddPrefix(
 			}
 			nbi.prefixesIndexByPrefix[newPrefix.Prefix] = patchedPrefix
 		} else {
-			nbi.Logger.Debug(ctx, "IP address ", newPrefix.Prefix, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "IP address %s already exists in Netbox and is up to date...", newPrefix.Prefix)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "IP address ", newPrefix.Prefix, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "IP address %s does not exist in Netbox. Creating it...", newPrefix.Prefix)
 		newPrefix, err := service.Create[objects.Prefix](ctx, nbi.NetboxAPI, newPrefix)
 		if err != nil {
 			return nil, err
@@ -1495,12 +1344,7 @@ func (nbi *NetboxInventory) AddWirelessLAN(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"WirelessLAN ",
-				newWirelessLan.SSID,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "WirelessLAN %s already exists in Netbox but is out of date. Patching it...", newWirelessLan.SSID)
 			patchedWirelessLan, err := service.Patch[objects.WirelessLAN](
 				ctx,
 				nbi.NetboxAPI,
@@ -1512,10 +1356,10 @@ func (nbi *NetboxInventory) AddWirelessLAN(
 			}
 			nbi.wirelessLANsIndexBySSID[newWirelessLan.SSID] = patchedWirelessLan
 		} else {
-			nbi.Logger.Debug(ctx, "WirelessLAN ", newWirelessLan.SSID, " already exists in Netbox and is up to date...")
+			nbi.Logger.Debugf(ctx, "WirelessLAN %s already exists in Netbox and is up to date...", newWirelessLan.SSID)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "WirelessLAN ", newWirelessLan.SSID, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "WirelessLAN %s does not exist in Netbox. Creating it...", newWirelessLan.SSID)
 		newWirelessLan, err := service.Create(ctx, nbi.NetboxAPI, newWirelessLan)
 		if err != nil {
 			return nil, err
@@ -1552,12 +1396,7 @@ func (nbi *NetboxInventory) AddWirelessLANGroup(
 			return nil, err
 		}
 		if len(diffMap) > 0 {
-			nbi.Logger.Debug(
-				ctx,
-				"WirelessLANGroup ",
-				newWirelessLANGroup.Name,
-				" already exists in Netbox but is out of date. Patching it...",
-			)
+			nbi.Logger.Debugf(ctx, "WirelessLANGroup %s already exists in Netbox but is out of date. Patching it...", newWirelessLANGroup.Name)
 			patchedWirelessLANGroup, err := service.Patch[objects.WirelessLANGroup](
 				ctx,
 				nbi.NetboxAPI,
@@ -1569,15 +1408,10 @@ func (nbi *NetboxInventory) AddWirelessLANGroup(
 			}
 			nbi.wirelessLANGroupsIndexByName[newWirelessLANGroup.Name] = patchedWirelessLANGroup
 		} else {
-			nbi.Logger.Debug(
-				ctx,
-				"WirelessLANGroup ",
-				newWirelessLANGroup.Name,
-				" already exists in Netbox and is up to date...",
-			)
+			nbi.Logger.Debugf(ctx, "WirelessLANGroup %s already exists in Netbox and is up to date...", newWirelessLANGroup.Name)
 		}
 	} else {
-		nbi.Logger.Debug(ctx, "WirelessLANGroup ", newWirelessLANGroup.Name, " does not exist in Netbox. Creating it...")
+		nbi.Logger.Debugf(ctx, "WirelessLANGroup %s does not exist in Netbox. Creating it...", newWirelessLANGroup.Name)
 		newWirelessLANGroup, err := service.Create[objects.WirelessLANGroup](ctx, nbi.NetboxAPI, newWirelessLANGroup)
 		if err != nil {
 			return nil, err
