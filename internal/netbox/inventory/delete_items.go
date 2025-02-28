@@ -92,12 +92,7 @@ func (nbi *NetboxInventory) softDelete(orphanItem objects.OrphanItem) error {
 		case *objects.IPAddress:
 			_, err = service.Patch[objects.IPAddress](nbi.OrphanManager.Ctx, nbi.NetboxAPI, orphanItem.GetID(), diffMap)
 		case *objects.VirtualDeviceContext:
-			_, err = service.Patch[objects.VirtualDeviceContext](
-				nbi.OrphanManager.Ctx,
-				nbi.NetboxAPI,
-				orphanItem.GetID(),
-				diffMap,
-			)
+			_, err = service.Patch[objects.VirtualDeviceContext](nbi.OrphanManager.Ctx, nbi.NetboxAPI, orphanItem.GetID(), diffMap)
 		case *objects.Interface:
 			_, err = service.Patch[objects.Interface](nbi.OrphanManager.Ctx, nbi.NetboxAPI, orphanItem.GetID(), diffMap)
 		case *objects.VMInterface:
@@ -130,6 +125,8 @@ func (nbi *NetboxInventory) softDelete(orphanItem objects.OrphanItem) error {
 			_, err = service.Patch[objects.WirelessLANGroup](nbi.OrphanManager.Ctx, nbi.NetboxAPI, orphanItem.GetID(), diffMap)
 		case *objects.MACAddress:
 			_, err = service.Patch[objects.MACAddress](nbi.OrphanManager.Ctx, nbi.NetboxAPI, orphanItem.GetID(), diffMap)
+		case *objects.VirtualDisk:
+			_, err = service.Patch[objects.VirtualDisk](nbi.OrphanManager.Ctx, nbi.NetboxAPI, orphanItem.GetID(), diffMap)
 		default:
 			return fmt.Errorf("unsupported type for orphan item%T", orphanItem)
 		}
