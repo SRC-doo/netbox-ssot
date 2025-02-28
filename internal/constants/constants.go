@@ -332,6 +332,7 @@ const (
 	MaxInterfaceNameLength   = 64
 	MaxVMNameLength          = 64
 	MaxVMInterfaceNameLength = 64
+	MaxVirtualDiskNameLength = 64
 
 	//nolint:lll
 	// Limitations for devices https://github.com/netbox-community/netbox/blob/d03d302eef3819db64cad8ae74dc5255647045f6/netbox/dcim/models/device_components.py.

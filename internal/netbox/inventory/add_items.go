@@ -1573,6 +1573,15 @@ func (nbi *NetboxInventory) AddVirtualDisk(
 	newVirtualDisk.NetboxObject.AddTag(nbi.SsotTag)
 	addSourceNameCustomField(ctx, &newVirtualDisk.NetboxObject)
 	newVirtualDisk.SetCustomField(constants.CustomFieldOrphanLastSeenName, nil)
+	if len(newVirtualDisk.Name) > constants.MaxVirtualDiskNameLength {
+		nbi.Logger.Debugf(
+			nbi.Ctx,
+			"VirtualDisk name %s is too long, truncating to %d characters",
+			newVirtualDisk.Name,
+			constants.MaxVirtualDiskNameLength,
+		)
+		newVirtualDisk.Name = newVirtualDisk.Name[:constants.MaxVirtualDiskNameLength]
+	}
 	nbi.virtualDisksLock.Lock()
 	defer nbi.virtualDisksLock.Unlock()
 	if _, ok := nbi.virtualDisksIndexByVMIDAndName[newVirtualDisk.VM.ID][newVirtualDisk.Name]; ok {

@@ -1003,7 +1003,7 @@ func (o *OVirtSource) syncVM(
 	vmID string,
 	ovirtVM *ovirtsdk4.Vm,
 ) error {
-	collectedVM, err := o.extractVMData(nbi, vmID, ovirtVM)
+	collectedVM, collectedVMDisks, err := o.extractVMData(nbi, vmID, ovirtVM)
 	if err != nil {
 		return err
 	}
@@ -1011,6 +1011,11 @@ func (o *OVirtSource) syncVM(
 	nbVM, err := nbi.AddVM(o.Ctx, collectedVM)
 	if err != nil {
 		return fmt.Errorf("failed to sync oVirt vm %s: %v", collectedVM.Name, err)
+	}
+
+	err = o.syncVMDisks(nbi, collectedVMDisks, nbVM)
+	if err != nil {
+		return fmt.Errorf("failed to sync oVirt vm %s's disks: %v", collectedVM.Name, err)
 	}
 
 	err = o.syncVMInterfaces(nbi, ovirtVM, nbVM)
@@ -1021,13 +1026,28 @@ func (o *OVirtSource) syncVM(
 	return nil
 }
 
+func (o *OVirtSource) syncVMDisks(
+	nbi *inventory.NetboxInventory,
+	collectedVMDisks []*objects.VirtualDisk,
+	nbVM *objects.VM,
+) error {
+	for _, disk := range collectedVMDisks {
+		disk.VM = nbVM
+		_, err := nbi.AddVirtualDisk(o.Ctx, disk)
+		if err != nil {
+			return fmt.Errorf("failed to sync oVirt vm %s's disk %s: %v", nbVM.Name, disk.Name, err)
+		}
+	}
+	return nil
+}
+
 //
 //nolint:gocyclo
 func (o *OVirtSource) extractVMData(
 	nbi *inventory.NetboxInventory,
 	vmID string,
 	vm *ovirtsdk4.Vm,
-) (*objects.VM, error) {
+) (*objects.VM, []*objects.VirtualDisk, error) {
 	var err error
 	// VM name, which is used as unique identifier for VMs in Netbox
 	vmName, exists := vm.Name()
@@ -1103,13 +1123,21 @@ func (o *OVirtSource) extractVMData(
 	}
 
 	// Disks
-	var vmDiskSizeBytes int64
+	vmDisks := []*objects.VirtualDisk{}
 	if diskAttachment, exists := vm.DiskAttachments(); exists {
 		for _, diskAttachment := range diskAttachment.Slice() {
 			if ovirtDisk, exists := diskAttachment.Disk(); exists {
 				disk := o.Disks[ovirtDisk.MustId()]
 				if provisionedDiskSize, exists := disk.ProvisionedSize(); exists {
-					vmDiskSizeBytes += provisionedDiskSize
+					diskSizeMB := provisionedDiskSize / constants.MB
+					diskName := disk.MustName()
+					if diskName == "" {
+						diskName = fmt.Sprintf("disk-%s", disk.MustId())
+					}
+					vmDisks = append(vmDisks, &objects.VirtualDisk{
+						Name: diskName,
+						Size: int(diskSizeMB),
+					})
 				}
 			}
 		}
@@ -1162,13 +1190,13 @@ func (o *OVirtSource) extractVMData(
 	if len(o.SourceConfig.VMRoleRelations) > 0 {
 		vmRole, err = common.MatchVMToRole(o.Ctx, nbi, vmName, o.SourceConfig.VMRoleRelations)
 		if err != nil {
-			return nil, fmt.Errorf("match vm to role: %s", err)
+			return nil, nil, fmt.Errorf("match vm to role: %s", err)
 		}
 	}
 	if vmRole == nil {
 		vmRole, err = nbi.AddVMDeviceRole(o.Ctx)
 		if err != nil {
-			return nil, fmt.Errorf("add vm device role: %s", err)
+			return nil, nil, fmt.Errorf("add vm device role: %s", err)
 		}
 	}
 
@@ -1179,7 +1207,7 @@ func (o *OVirtSource) extractVMData(
 	}
 	vmPlatform, err = nbi.AddPlatform(o.Ctx, platformStruct)
 	if err != nil {
-		return nil, fmt.Errorf(
+		return nil, nil, fmt.Errorf(
 			"failed adding oVirt vm's Platform %v with error: %s",
 			platformStruct,
 			err,
@@ -1205,8 +1233,7 @@ func (o *OVirtSource) extractVMData(
 		Comments:    vmComments,
 		VCPUs:       vmVCPUs,
 		Memory:      int(vmMemorySizeBytes) / constants.MB, // MBs (default in netbox)
-		Disk:        int(vmDiskSizeBytes) / constants.MB,   // MBs (default in netbox)
-	}, nil
+	}, vmDisks, nil
 }
 
 // syncVMInterfaces is a helper function for syncVMS. It syncs all interfaces from a VM to netbox.
