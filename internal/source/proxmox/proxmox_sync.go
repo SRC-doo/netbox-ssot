@@ -262,6 +262,15 @@ func (ps *ProxmoxSource) syncVM(
 	vm *proxmox.VirtualMachine,
 	nbHost *objects.Device,
 ) error {
+	isTemplate := false
+	if vm.Template {
+		isTemplate = true
+	}
+
+	if ps.SourceConfig.IgnoreVMTemplates && isTemplate {
+		return nil
+	}
+
 	// Determine VM status
 	vmStatus := &objects.VMStatusActive
 	if vm.Status == "stopped" {
