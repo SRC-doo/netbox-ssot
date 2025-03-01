@@ -269,11 +269,20 @@ func (vc *VmwareSource) CreateClusterDataCenterRelation(
 		finder.SetDatacenter(dc)
 		clusters, err := finder.ClusterComputeResourceList(ctx, "*")
 		if err != nil {
-			return fmt.Errorf(
-				"finder failed finding clusters for datacenter %s: %s",
-				dc.InventoryPath,
-				err,
-			)
+			// fallback on single host clusters
+			clusters, err := finder.ComputeResourceList(ctx, "*")
+
+			if err != nil {
+				return fmt.Errorf(
+					"finder failed finding clusters for datacenter %s: %s",
+					dc.InventoryPath,
+					err,
+				)
+			}
+
+			for _, cluster := range clusters {
+				vc.Cluster2Datacenter[cluster.Reference().Value] = dc.Reference().Value
+			}
 		}
 		for _, cluster := range clusters {
 			vc.Cluster2Datacenter[cluster.Reference().Value] = dc.Reference().Value
