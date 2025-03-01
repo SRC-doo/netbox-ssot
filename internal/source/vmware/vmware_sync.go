@@ -455,17 +455,16 @@ func (vc *VmwareSource) syncHostPhysicalNics(
 	nbHost *objects.Device,
 	deviceData *devices.DeviceData,
 ) error {
+	// Collect data over all physical interfaces
 	if vcHost.Config != nil && vcHost.Config.Network != nil && vcHost.Config.Network.Pnic != nil {
 		for _, pnic := range vcHost.Config.Network.Pnic {
-			hostPnic, macAddress, err := vc.collectHostPhysicalNicData(
-				nbi,
-				nbHost,
-				pnic,
-				deviceData,
-			)
+			// Fetch host pnic data
+			hostPnic, macAddress, err := vc.collectHostPhysicalNicData(nbi, nbHost, pnic, deviceData)
 			if err != nil {
 				return err
 			}
+
+			// Filter host pnic
 			if utils.FilterInterfaceName(hostPnic.Name, vc.SourceConfig.InterfaceFilter) {
 				vc.Logger.Debugf(
 					vc.Ctx,
@@ -475,11 +474,14 @@ func (vc *VmwareSource) syncHostPhysicalNics(
 				)
 				continue
 			}
+
 			// After collecting all of the data add interface to nbi
 			nbHostPnic, err := nbi.AddInterface(vc.Ctx, hostPnic)
 			if err != nil {
 				return fmt.Errorf("failed adding physical interface %+v: %s", hostPnic, err)
 			}
+
+			// Create MAC address
 			if macAddress != "" {
 				nbMACAddress, err := common.CreateMACAddressForObjectType(
 					vc.Ctx,
@@ -686,11 +688,13 @@ func (vc *VmwareSource) syncHostVirtualNics(
 	// Collect data over all virtual interfaces
 	if vcHost.Config != nil && vcHost.Config.Network != nil && vcHost.Config.Network.Vnic != nil {
 		for _, vnic := range vcHost.Config.Network.Vnic {
-			hostVnic, err := vc.collectHostVirtualNicData(nbi, nbHost, vcHost, vnic)
+			// Fetch host vnic data
+			hostVnic, macAddress, err := vc.collectHostVirtualNicData(nbi, nbHost, vcHost, vnic)
 			if err != nil {
 				return err
 			}
 
+			// Filter host vnic
 			if utils.FilterInterfaceName(hostVnic.Name, vc.SourceConfig.InterfaceFilter) {
 				vc.Logger.Debugf(
 					vc.Ctx,
@@ -701,9 +705,26 @@ func (vc *VmwareSource) syncHostVirtualNics(
 				continue
 			}
 
-			nbVnic, err := nbi.AddInterface(vc.Ctx, hostVnic)
+			// After collecting all of the data add interface to nbi
+			nbHostVnic, err := nbi.AddInterface(vc.Ctx, hostVnic)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed adding virtual interface %+v: %s", hostVnic, err)
+			}
+
+			// Create MAC address
+			if macAddress != "" {
+				nbMACAddress, err := common.CreateMACAddressForObjectType(
+					vc.Ctx,
+					nbi,
+					macAddress,
+					nbHostVnic,
+				)
+				if err != nil {
+					return fmt.Errorf("create mac address for object type: %s", err)
+				}
+				if err = common.SetPrimaryMACForInterface(vc.Ctx, nbi, nbHostVnic, nbMACAddress); err != nil {
+					return fmt.Errorf("set primary mac for interface %+v: %s", nbHostVnic, err)
+				}
 			}
 
 			// Get IPv4 address for this vnic
@@ -730,7 +751,7 @@ func (vc *VmwareSource) syncHostVirtualNics(
 					DNSName:            ipv4DNS,
 					Tenant:             nbHost.Tenant,
 					AssignedObjectType: constants.ContentTypeDcimInterface,
-					AssignedObjectID:   nbVnic.ID,
+					AssignedObjectID:   nbHostVnic.ID,
 				})
 				if err != nil {
 					vc.Logger.Errorf(vc.Ctx, "add ipv4 address: %s", err)
@@ -751,6 +772,7 @@ func (vc *VmwareSource) syncHostVirtualNics(
 				}
 			}
 
+			// Get IPv6 address for this vnic
 			if vnic.Spec.Ip.IpV6Config != nil {
 				for _, ipv6Entry := range vnic.Spec.Ip.IpV6Config.IpV6Address {
 					ipv6Address := ipv6Entry.IpAddress
@@ -771,7 +793,7 @@ func (vc *VmwareSource) syncHostVirtualNics(
 							Status:             &objects.IPAddressStatusActive, // TODO
 							Tenant:             nbHost.Tenant,
 							AssignedObjectType: constants.ContentTypeDcimInterface,
-							AssignedObjectID:   nbVnic.ID,
+							AssignedObjectID:   nbHostVnic.ID,
 						})
 						if err != nil {
 							vc.Logger.Errorf(vc.Ctx, "add ipv6 address: %s", err)
@@ -822,7 +844,7 @@ func (vc *VmwareSource) collectHostVirtualNicData(
 	nbHost *objects.Device,
 	vcHost mo.HostSystem,
 	vnic types.HostVirtualNic,
-) (*objects.Interface, error) {
+) (*objects.Interface, string, error) {
 	vnicName := vnic.Device
 	vnicPortgroupData, vnicPortgroupDataOk := vc.Networks.HostPortgroups[vcHost.Name][vnic.Portgroup]
 	vnicDvPortgroupKey := ""
@@ -880,7 +902,7 @@ func (vc *VmwareSource) collectHostVirtualNicData(
 			vc.SourceConfig.VlanSiteRelations,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("vlan site: %s", err)
+			return nil, "", fmt.Errorf("vlan site: %s", err)
 		}
 		vnicUntaggedVlanGroup, err := common.MatchVlanToGroup(
 			vc.Ctx,
@@ -891,7 +913,7 @@ func (vc *VmwareSource) collectHostVirtualNicData(
 			vc.SourceConfig.VlanGroupSiteRelations,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("vlan group: %s", err)
+			return nil, "", fmt.Errorf("vlan group: %s", err)
 		}
 		vnicUntaggedVlan, _ = nbi.GetVlan(vnicUntaggedVlanGroup.ID, vnicPortgroupVlanID)
 		vnicMode = &objects.InterfaceModeAccess
@@ -915,7 +937,7 @@ func (vc *VmwareSource) collectHostVirtualNicData(
 				vc.SourceConfig.VlanSiteRelations,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("match vlan to site: %s", err)
+				return nil, "", fmt.Errorf("match vlan to site: %s", err)
 			}
 			vnicTaggedVlanGroup, err := common.MatchVlanToGroup(
 				vc.Ctx,
@@ -926,7 +948,7 @@ func (vc *VmwareSource) collectHostVirtualNicData(
 				vc.SourceConfig.VlanGroupSiteRelations,
 			)
 			if err != nil {
-				return nil, fmt.Errorf("match vlan to vlan group: %s", err)
+				return nil, "", fmt.Errorf("match vlan to vlan group: %s", err)
 			}
 			taggedVlan, taggedVlanExists := nbi.GetVlan(vnicTaggedVlanGroup.ID, vnicDvPortgroupDataVlanID)
 			if taggedVlanExists {
@@ -952,7 +974,7 @@ func (vc *VmwareSource) collectHostVirtualNicData(
 		Mode:         vnicMode,
 		TaggedVlans:  vnicTaggedVlans,
 		UntaggedVlan: vnicUntaggedVlan,
-	}, nil
+	}, strings.ToUpper(vnic.Spec.Mac), nil
 }
 
 // syncVMs syncs VMs from the source to Netbox.
