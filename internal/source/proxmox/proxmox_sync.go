@@ -154,7 +154,7 @@ func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 				CustomFields: map[string]interface{}{
 					constants.CustomFieldHostCPUCoresName: fmt.Sprintf("%d", node.CPUInfo.CPUs),
 					constants.CustomFieldHostMemoryName: fmt.Sprintf(
-						"%d GB",
+						"%d GiB",
 						node.Memory.Total/constants.GiB,
 					),
 				},
