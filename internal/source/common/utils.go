@@ -224,18 +224,14 @@ func MatchHostToSite(
 		return nil, fmt.Errorf("matching host to site: %s", err)
 	}
 	if siteName != "" {
-		site, ok := nbi.GetSite(siteName)
-		if !ok {
-			newSite, err := nbi.AddSite(ctx, &objects.Site{
-				Name: siteName,
-				Slug: utils.Slugify(siteName),
-			})
-			if err != nil {
-				return nil, fmt.Errorf("add new site: %s", err)
-			}
-			return newSite, nil
+		newSite, err := nbi.AddSite(ctx, &objects.Site{
+			Name: siteName,
+			Slug: utils.Slugify(siteName),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("add new site: %s", err)
 		}
-		return site, nil
+		return newSite, nil
 	}
 	site, _ := nbi.GetSite(constants.DefaultSite)
 	return site, nil
