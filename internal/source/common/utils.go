@@ -254,18 +254,14 @@ func MatchHostToTenant(
 		return nil, fmt.Errorf("matching host to tenant: %s", err)
 	}
 	if tenantName != "" {
-		site, ok := nbi.GetTenant(tenantName)
-		if !ok {
-			tenant, err := nbi.AddTenant(ctx, &objects.Tenant{
-				Name: tenantName,
-				Slug: utils.Slugify(tenantName),
-			})
-			if err != nil {
-				return nil, fmt.Errorf("add new tenant: %s", err)
-			}
-			return tenant, nil
+		tenant, err := nbi.AddTenant(ctx, &objects.Tenant{
+			Name: tenantName,
+			Slug: utils.Slugify(tenantName),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("add new tenant: %s", err)
 		}
-		return site, nil
+		return tenant, nil
 	}
 	return nil, nil
 }
