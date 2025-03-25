@@ -26,7 +26,7 @@ func (nbi *NetboxInventory) CreateDefaultVlanGroupForVlan(
 		VidRanges: []objects.VidRange{{constants.DefaultVID, constants.MaxVID}}}
 
 	if vlanSite != nil {
-		defaultVlanGroup.Name = fmt.Sprintf("%sDefaultVlanGroup", vlanSite.Name)
+		defaultVlanGroup.Name = fmt.Sprintf("%s DefaultVlanGroup", vlanSite.Name)
 		defaultVlanGroup.ScopeType = constants.ContentTypeDcimSite
 		defaultVlanGroup.ScopeID = vlanSite.ID
 	} else {
