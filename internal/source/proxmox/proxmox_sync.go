@@ -78,6 +78,12 @@ func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 	ps.NetboxNodes = make(map[string]*objects.Device, len(ps.Nodes))
 	for _, node := range ps.Nodes {
 		var hostSite *objects.Site
+
+		// Add domain name suffix if needed
+		if ps.SourceConfig.AssignDomainName != "" {
+			node.Name += ps.SourceConfig.AssignDomainName
+		}
+
 		if ps.NetboxCluster.ScopeType == constants.ContentTypeDcimSite {
 			hostSite = nbi.GetSiteByID(ps.NetboxCluster.ScopeID)
 		}
@@ -227,6 +233,11 @@ func (ps *ProxmoxSource) syncVMs(nbi *inventory.NetboxInventory) error {
 	var wg sync.WaitGroup
 
 	for nodeName, vms := range ps.Vms {
+		// Add domain name suffix if needed
+		if ps.SourceConfig.AssignDomainName != "" {
+			nodeName += ps.SourceConfig.AssignDomainName
+		}
+
 		nbHost := ps.NetboxNodes[nodeName]
 		for _, vm := range vms {
 			guard <- struct{}{} // Block if maxGoroutines are running
@@ -463,6 +474,11 @@ func (ps *ProxmoxSource) syncContainers(nbi *inventory.NetboxInventory) error {
 			return fmt.Errorf("create container role: %s", err)
 		}
 		for nodeName, containers := range ps.Containers {
+			// Add domain name suffix if needed
+			if ps.SourceConfig.AssignDomainName != "" {
+				nodeName += ps.SourceConfig.AssignDomainName
+			}
+
 			nbHost := ps.NetboxNodes[nodeName]
 			for _, container := range containers {
 				// Determine Container status

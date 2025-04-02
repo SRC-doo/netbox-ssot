@@ -132,6 +132,7 @@ type SourceConfig struct {
 	IgnoreAssetTags     bool                 `yaml:"ignoreAssetTags"`
 	IgnoreSerialNumbers bool                 `yaml:"ignoreSerialNumbers"`
 	IgnoreVMTemplates   bool                 `yaml:"ignoreVMTemplates"`
+	AssignDomainName    string               `yaml:"assignDomainName"`
 
 	// Relations
 	DatacenterClusterGroupRelations map[string]string `yaml:"datacenterClusterGroupRelations"`
@@ -165,6 +166,7 @@ func (sc *SourceConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		ValidateCert                    bool                 `yaml:"validateCert"`
 		Tag                             string               `yaml:"tag"`
 		TagColor                        string               `yaml:"tagColor"`
+		AssignDomainName                string               `yaml:"assignDomainName"`
 		IgnoredSubnets                  []string             `yaml:"ignoredSubnets"`
 		PermittedSubnets                []string             `yaml:"permittedSubnets"`
 		InterfaceFilter                 string               `yaml:"interfaceFilter"`
@@ -203,6 +205,7 @@ func (sc *SourceConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	sc.ValidateCert = rawMarshal.ValidateCert
 	sc.Tag = rawMarshal.Tag
 	sc.TagColor = rawMarshal.TagColor
+	sc.AssignDomainName = rawMarshal.AssignDomainName
 	sc.IgnoredSubnets = rawMarshal.IgnoredSubnets
 	sc.PermittedSubnets = rawMarshal.PermittedSubnets
 	sc.InterfaceFilter = rawMarshal.InterfaceFilter
@@ -323,7 +326,7 @@ func (sc SourceConfig) String() string {
 	return fmt.Sprintf(
 		"SourceConfig{Name: %s, Type: %s, HTTPScheme: %s, Hostname: %s, Port: %d, "+
 			"Username: %s, Password: %s, PermittedSubnets: %v, ValidateCert: %t, "+
-			"Tag: %s, TagColor: %s, DatacenterClusterGroupRelations: %s, "+
+			"Tag: %s, TagColor: %s, AssignDomainName: %s, DatacenterClusterGroupRelations: %s, "+
 			"HostSiteRelations: %v, ClusterSiteRelations: %v, ClusterTenantRelations: %v, "+
 			"HostTenantRelations: %v, VmTenantRelations: %v, VlanGroupRelations: %v, "+
 			"VlanTenantRelations: %v, WlanTenantRelations: %v}",
@@ -338,6 +341,7 @@ func (sc SourceConfig) String() string {
 		sc.ValidateCert,
 		sc.Tag,
 		sc.TagColor,
+		sc.AssignDomainName,
 		sc.DatacenterClusterGroupRelations,
 		sc.HostSiteRelations,
 		sc.ClusterSiteRelations,
