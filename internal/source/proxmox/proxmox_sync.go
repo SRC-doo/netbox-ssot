@@ -317,16 +317,16 @@ func (ps *ProxmoxSource) syncVM(
 				constants.CustomFieldSourceIDName: fmt.Sprintf("%d", vm.VMID),
 			},
 		},
-		Host:    nbHost,
+		Name:    vm.Name,
 		Cluster: ps.NetboxCluster, // Default single proxmox cluster
+		Site:    nbHost.Site,
 		Tenant:  vmTenant,
-		Role:    vmRole,
+		Status:  vmStatus,
+		Host:    nbHost,
 		VCPUs:   float32(vm.CPUs),
 		Memory:  int(vm.MaxMem / constants.MiB),  //nolint:gosec
 		Disk:    int(vm.MaxDisk / constants.MiB), //nolint:gosec
-		Site:    nbHost.Site,
-		Name:    vm.Name,
-		Status:  vmStatus,
+		Role:    vmRole,
 	}
 	nbVM, err := nbi.AddVM(ps.Ctx, vmStruct)
 	if err != nil {
