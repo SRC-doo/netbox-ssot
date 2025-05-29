@@ -16,6 +16,7 @@ import (
 func (ps *ProxmoxSource) syncCluster(nbi *inventory.NetboxInventory) error {
 	var clusterScopeType constants.ContentType
 	var clusterScopeID int
+
 	clusterSite, err := common.MatchClusterToSite(
 		ps.Ctx,
 		nbi,
@@ -25,10 +26,12 @@ func (ps *ProxmoxSource) syncCluster(nbi *inventory.NetboxInventory) error {
 	if err != nil {
 		return err
 	}
+
 	if clusterSite != nil {
 		clusterScopeType = constants.ContentTypeDcimSite
 		clusterScopeID = clusterSite.ID
 	}
+
 	clusterTenant, err := common.MatchClusterToTenant(
 		ps.Ctx,
 		nbi,
@@ -38,6 +41,7 @@ func (ps *ProxmoxSource) syncCluster(nbi *inventory.NetboxInventory) error {
 	if err != nil {
 		return err
 	}
+
 	clusterTypeStruct := &objects.ClusterType{
 		NetboxObject: objects.NetboxObject{
 			Tags: []*objects.Tag{ps.SourceTypeTag},
@@ -45,12 +49,13 @@ func (ps *ProxmoxSource) syncCluster(nbi *inventory.NetboxInventory) error {
 		Name: "Proxmox",
 		Slug: utils.Slugify("Proxmox"),
 	}
+
 	clusterType, err := nbi.AddClusterType(ps.Ctx, clusterTypeStruct)
 	if err != nil {
 		return fmt.Errorf("add cluster type %+v: %s", clusterTypeStruct, err)
 	}
 
-	// Check if proxmox is running standalon node.
+	// Check if proxmox is running standalone node.
 	// in that case cluster name is empty and should set SourceConfig.Name for Cluster.Name
 	if ps.Cluster.Name == "" {
 		ps.Cluster.Name = ps.SourceConfig.Name
@@ -66,16 +71,19 @@ func (ps *ProxmoxSource) syncCluster(nbi *inventory.NetboxInventory) error {
 		ScopeID:   clusterScopeID,
 		Tenant:    clusterTenant,
 	}
+
 	nbCluster, err := nbi.AddCluster(ps.Ctx, clusterStruct)
 	if err != nil {
 		return fmt.Errorf("add cluster %+v: %s", clusterStruct, err)
 	}
+
 	ps.NetboxCluster = nbCluster
 	return nil
 }
 
 func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 	ps.NetboxNodes = make(map[string]*objects.Device, len(ps.Nodes))
+
 	for _, node := range ps.Nodes {
 		var hostSite *objects.Site
 
@@ -87,6 +95,7 @@ func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 		if ps.NetboxCluster.ScopeType == constants.ContentTypeDcimSite {
 			hostSite = nbi.GetSiteByID(ps.NetboxCluster.ScopeID)
 		}
+
 		var err error
 		if hostSite == nil {
 			hostSite, err = common.MatchHostToSite(
@@ -99,6 +108,7 @@ func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 				return fmt.Errorf("match host to site: %s", err)
 			}
 		}
+
 		hostTenant, err := common.MatchHostToTenant(
 			ps.Ctx,
 			nbi,
@@ -108,6 +118,8 @@ func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 		if err != nil {
 			return fmt.Errorf("match host to tenant: %s", err)
 		}
+
+		// Manufacturer
 		// TODO: find a way to get device type info from proxmox
 		manufacturerStruct := &objects.Manufacturer{
 			NetboxObject: objects.NetboxObject{
@@ -120,6 +132,8 @@ func (ps *ProxmoxSource) syncNodes(nbi *inventory.NetboxInventory) error {
 		if err != nil {
 			return fmt.Errorf("adding host manufacturer %+v: %s", manufacturerStruct, err)
 		}
+
+		// DeviceType
 		deviceTypeStruct := &objects.DeviceType{
 			NetboxObject: objects.NetboxObject{
 				Description: constants.DefaultDeviceTypeDescription,
