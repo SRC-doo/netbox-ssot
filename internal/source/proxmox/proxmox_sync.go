@@ -309,6 +309,29 @@ func (ps *ProxmoxSource) syncVM(
 		vmStatus = &objects.VMStatusOffline
 	}
 
+	var vmAgentOsInfo *proxmox.AgentOsInfo
+	if vm.Status == "running" {
+		vmAgentOsInfo, _ = vm.AgentOsInfo(ps.Ctx)
+	}
+
+	platformName := "Unknown"
+	if vmAgentOsInfo != nil && vmAgentOsInfo.PrettyName != "" {
+		platformName = vmAgentOsInfo.PrettyName
+	}
+
+	platformStruct := &objects.Platform{
+		Name: platformName,
+		Slug: utils.Slugify(platformName),
+	}
+	vmPlatform, err := nbi.AddPlatform(ps.Ctx, platformStruct)
+	if err != nil {
+		return fmt.Errorf(
+			"failed adding Proxmox vm's platform %+v with error: %s",
+			platformStruct,
+			err,
+		)
+	}
+
 	// Determine VM tenant
 	vmTenant, err := common.MatchVMToTenant(ps.Ctx, nbi, vm.Name, ps.SourceConfig.VMTenantRelations)
 	if err != nil {
@@ -339,16 +362,17 @@ func (ps *ProxmoxSource) syncVM(
 				constants.CustomFieldSourceIDName: fmt.Sprintf("%d", vm.VMID),
 			},
 		},
-		Name:    vm.Name,
-		Cluster: ps.NetboxCluster, // Default single proxmox cluster
-		Site:    nbHost.Site,
-		Tenant:  vmTenant,
-		Status:  vmStatus,
-		Host:    nbHost,
-		VCPUs:   float32(vm.CPUs),
-		Memory:  int(vm.MaxMem / constants.MiB),  //nolint:gosec
-		Disk:    int(vm.MaxDisk / constants.MiB), //nolint:gosec
-		Role:    vmRole,
+		Name:     vm.Name,
+		Cluster:  ps.NetboxCluster, // Default single proxmox cluster
+		Site:     nbHost.Site,
+		Tenant:   vmTenant,
+		Status:   vmStatus,
+		Host:     nbHost,
+		Platform: vmPlatform,
+		VCPUs:    float32(vm.CPUs),
+		Memory:   int(vm.MaxMem / constants.MiB),  //nolint:gosec
+		Disk:     int(vm.MaxDisk / constants.MiB), //nolint:gosec
+		Role:     vmRole,
 	}
 	nbVM, err := nbi.AddVM(ps.Ctx, vmStruct)
 	if err != nil {
