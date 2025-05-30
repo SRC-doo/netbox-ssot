@@ -241,9 +241,13 @@ func (ps *ProxmoxSource) syncNodeNetworks(
 
 // Function that synces proxmox vms to the netbox inventory.
 func (ps *ProxmoxSource) syncVMs(nbi *inventory.NetboxInventory) error {
+	// Maximum number of goroutines to run concurrently
 	const maxGoroutines = 50
+	// Use a guard channel as semaphore to limit the number of goroutines
 	guard := make(chan struct{}, maxGoroutines)
+	// Use errChan to collect errors from goroutines
 	errChan := make(chan error, len(ps.Vms))
+	// Use a WaitGroup to wait for all goroutines to complete
 	var wg sync.WaitGroup
 
 	for nodeName, vms := range ps.Vms {
@@ -251,8 +255,9 @@ func (ps *ProxmoxSource) syncVMs(nbi *inventory.NetboxInventory) error {
 		if ps.SourceConfig.AssignDomainName != "" {
 			nodeName += ps.SourceConfig.AssignDomainName
 		}
-
 		nbHost := ps.NetboxNodes[nodeName]
+
+		// Iterate over each VM and start a goroutine to sync it
 		for _, vm := range vms {
 			guard <- struct{}{} // Block if maxGoroutines are running
 			wg.Add(1)
@@ -265,10 +270,12 @@ func (ps *ProxmoxSource) syncVMs(nbi *inventory.NetboxInventory) error {
 				if err != nil {
 					errChan <- err
 				}
+
 			}(vm, nbHost)
 		}
 	}
 
+	// Wait for all goroutines to complete
 	wg.Wait()
 	close(errChan)
 	close(guard)
@@ -308,6 +315,7 @@ func (ps *ProxmoxSource) syncVM(
 		return fmt.Errorf("match vm to tenant: %s", err)
 	}
 
+	// Determine VM role
 	var vmRole *objects.DeviceRole
 	if len(ps.SourceConfig.VMRoleRelations) > 0 {
 		vmRole, err = common.MatchVMToRole(ps.Ctx, nbi, vm.Name, ps.SourceConfig.VMRoleRelations)
