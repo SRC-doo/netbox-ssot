@@ -80,7 +80,22 @@ func (ps *ProxmoxSource) initNodeVMs(ctx context.Context, node *proxmox.Node) er
 	}
 	ps.Vms[node.Name] = make([]*proxmox.VirtualMachine, 0, len(vms))
 	for _, vm := range vms {
-		ps.Vms[node.Name] = append(ps.Vms[node.Name], vm)
+		// Fetch VM config
+		vmconfig, err := node.VirtualMachine(ctx, int(vm.VMID))
+		if err != nil {
+			return fmt.Errorf("init nodeVms: %s", err)
+		}
+
+		// Load VM disks
+		vmconfig.VirtualMachineConfig.MergeVirtIOs()
+		vmconfig.VirtualMachineConfig.MergeSATAs()
+		vmconfig.VirtualMachineConfig.MergeSCSIs()
+		vmconfig.VirtualMachineConfig.MergeIDEs()
+
+		// Store VM info in our list
+		ps.Vms[node.Name] = append(ps.Vms[node.Name], vmconfig)
+
+		// Load VM interfaces
 		ifaces, _ := vm.AgentGetNetworkIFaces(ctx)
 		ps.VMIfaces[vm.Name] = make([]*proxmox.AgentNetworkIface, 0, len(ifaces))
 		ps.VMIfaces[vm.Name] = append(ps.VMIfaces[vm.Name], ifaces...)
@@ -94,6 +109,7 @@ func (ps *ProxmoxSource) initContainers(ctx context.Context, node *proxmox.Node)
 	if err != nil {
 		return err
 	}
+
 	ps.Containers[node.Name] = make([]*proxmox.Container, 0, len(containers))
 	for _, container := range containers {
 		ps.Containers[node.Name] = append(ps.Containers[node.Name], container)
