@@ -2,6 +2,7 @@ package proxmox
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -309,6 +310,7 @@ func (ps *ProxmoxSource) syncVM(
 		vmStatus = &objects.VMStatusOffline
 	}
 
+	// Determine VM platform
 	var vmAgentOsInfo *proxmox.AgentOsInfo
 	if vm.Status == "running" {
 		vmAgentOsInfo, _ = vm.AgentOsInfo(ps.Ctx)
@@ -323,19 +325,16 @@ func (ps *ProxmoxSource) syncVM(
 		Name: platformName,
 		Slug: utils.Slugify(platformName),
 	}
+
 	vmPlatform, err := nbi.AddPlatform(ps.Ctx, platformStruct)
 	if err != nil {
-		return fmt.Errorf(
-			"failed adding Proxmox vm's platform %+v with error: %s",
-			platformStruct,
-			err,
-		)
+		return fmt.Errorf("failed to add vm's %+v platform: %s", vm, err)
 	}
 
 	// Determine VM tenant
 	vmTenant, err := common.MatchVMToTenant(ps.Ctx, nbi, vm.Name, ps.SourceConfig.VMTenantRelations)
 	if err != nil {
-		return fmt.Errorf("match vm to tenant: %s", err)
+		return fmt.Errorf("failed to match vm to tenant: %s", err)
 	}
 
 	// Determine VM role
@@ -343,16 +342,195 @@ func (ps *ProxmoxSource) syncVM(
 	if len(ps.SourceConfig.VMRoleRelations) > 0 {
 		vmRole, err = common.MatchVMToRole(ps.Ctx, nbi, vm.Name, ps.SourceConfig.VMRoleRelations)
 		if err != nil {
-			return fmt.Errorf("match vm to role: %s", err)
-		}
-	}
-	if vmRole == nil {
-		vmRole, err = nbi.AddVMDeviceRole(ps.Ctx)
-		if err != nil {
-			return fmt.Errorf("add vm device role: %s", err)
+			return fmt.Errorf("failed to match vm to role: %s", err)
 		}
 	}
 
+	if vmRole == nil {
+		vmRole, err = nbi.AddVMDeviceRole(ps.Ctx)
+		if err != nil {
+			return fmt.Errorf("failed to add vm's %+v device role: %s", vm, err)
+		}
+	}
+
+	// Fetch VM disks
+	vmDisks := make([]*objects.VirtualDisk, 0)
+	vmTotalDiskSizeMiB := 0
+
+	// Fetch VirtIOs disks
+	if len(vm.VirtualMachineConfig.VirtIOs) > 0 {
+		for _, disk := range vm.VirtualMachineConfig.VirtIOs {
+			diskData := strings.Split(disk, ",")
+			diskName := diskData[0]
+			diskSize := 0
+
+			for index, item := range diskData {
+				// First element is disk name/path
+				if index == 0 {
+					continue
+				}
+
+				if strings.Contains(item, "size") {
+					sizeData := strings.Split(item, "=")
+					if strings.HasSuffix(sizeData[1], "G") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
+						diskSize = diskSize * constants.KB
+					}
+					if strings.HasSuffix(sizeData[1], "T") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
+						diskSize = diskSize * constants.MB
+					}
+					vmTotalDiskSizeMiB += diskSize
+				}
+			}
+
+			// Can't add disk with size == 0
+			if diskSize == 0 {
+				continue
+			}
+
+			vmDisks = append(vmDisks, &objects.VirtualDisk{
+				NetboxObject: objects.NetboxObject{
+					Description: diskName,
+				},
+				Name: diskName,
+				Size: diskSize,
+			})
+		}
+	}
+
+	// Fetch SCSIs disks
+	if len(vm.VirtualMachineConfig.SCSIs) > 0 {
+		for _, disk := range vm.VirtualMachineConfig.SCSIs {
+			diskData := strings.Split(disk, ",")
+			diskName := diskData[0]
+			diskSize := 0
+
+			for index, item := range diskData {
+				// First element is disk name/path
+				if index == 0 {
+					continue
+				}
+
+				if strings.Contains(item, "size") {
+					sizeData := strings.Split(item, "=")
+					if strings.HasSuffix(sizeData[1], "G") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
+						diskSize = diskSize * constants.KB
+					}
+					if strings.HasSuffix(sizeData[1], "T") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
+						diskSize = diskSize * constants.MB
+					}
+					vmTotalDiskSizeMiB += diskSize
+				}
+			}
+
+			// Can't add disk with size == 0
+			if diskSize == 0 {
+				continue
+			}
+
+			vmDisks = append(vmDisks, &objects.VirtualDisk{
+				NetboxObject: objects.NetboxObject{
+					Description: diskName,
+				},
+				Name: diskName,
+				Size: diskSize,
+			})
+		}
+	}
+
+	// Fetch SATAs disks
+	if len(vm.VirtualMachineConfig.SATAs) > 0 {
+		for _, disk := range vm.VirtualMachineConfig.SATAs {
+			diskData := strings.Split(disk, ",")
+			diskName := diskData[0]
+			diskSize := 0
+
+			for index, item := range diskData {
+				// First element is disk name/path
+				if index == 0 {
+					continue
+				}
+
+				if strings.Contains(item, "size") {
+					sizeData := strings.Split(item, "=")
+					if strings.HasSuffix(sizeData[1], "G") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
+						diskSize = diskSize * constants.KB
+					}
+					if strings.HasSuffix(sizeData[1], "T") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
+						diskSize = diskSize * constants.MB
+					}
+					vmTotalDiskSizeMiB += diskSize
+				}
+			}
+
+			// Can't add disk with size == 0
+			if diskSize == 0 {
+				continue
+			}
+
+			vmDisks = append(vmDisks, &objects.VirtualDisk{
+				NetboxObject: objects.NetboxObject{
+					Description: diskName,
+				},
+				Name: diskName,
+				Size: diskSize,
+			})
+		}
+	}
+
+	// Fetch IDEs disks
+	if len(vm.VirtualMachineConfig.IDEs) > 0 {
+		for _, disk := range vm.VirtualMachineConfig.IDEs {
+			diskData := strings.Split(disk, ",")
+			diskName := diskData[0]
+			diskSize := 0
+
+			for index, item := range diskData {
+				// First element is disk name/path
+				if index == 0 {
+					continue
+				}
+
+				if strings.Contains(item, "size") {
+					sizeData := strings.Split(item, "=")
+					if strings.HasSuffix(sizeData[1], "G") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
+						diskSize = diskSize * constants.KB
+					}
+					if strings.HasSuffix(sizeData[1], "T") {
+						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
+						diskSize = diskSize * constants.MB
+					}
+					vmTotalDiskSizeMiB += diskSize
+				}
+			}
+
+			// Can't add disk with size == 0
+			if diskSize == 0 {
+				continue
+			}
+
+			vmDisks = append(vmDisks, &objects.VirtualDisk{
+				NetboxObject: objects.NetboxObject{
+					Description: diskName,
+				},
+				Name: diskName,
+				Size: diskSize,
+			})
+		}
+	}
+
+	// Compute final VM disk size
+	if vmTotalDiskSizeMiB == 0 {
+		vmTotalDiskSizeMiB = int((vm.MaxDisk / constants.GiB) * 1000)
+	}
+
+	// Fetch VM tags
 	newTags := ps.GetSourceTags()
 
 	if vm.Tags != "" {
@@ -386,19 +564,26 @@ func (ps *ProxmoxSource) syncVM(
 		Host:     nbHost,
 		Platform: vmPlatform,
 		VCPUs:    float32(vm.CPUs),
-		Memory:   int(vm.MaxMem / constants.MiB),  //nolint:gosec
-		Disk:     int(vm.MaxDisk / constants.MiB), //nolint:gosec
+		Memory:   int(vm.MaxMem / constants.MiB), //nolint:gosec
+		Disk:     vmTotalDiskSizeMiB,             //nolint:gosec
 		Role:     vmRole,
 	}
+
 	nbVM, err := nbi.AddVM(ps.Ctx, vmStruct)
 	if err != nil {
-		return fmt.Errorf("add vm: %s", err)
+		return fmt.Errorf("failed to add vm: %s", err)
 	}
 
 	// Sync VM networks
 	err = ps.syncVMNetworks(nbi, nbVM)
 	if err != nil {
-		return fmt.Errorf("sync vm networks: %s", err)
+		return fmt.Errorf("failed to sync vm's %+v networks: %s", nbVM, err)
+	}
+
+	// Sync VM disks
+	err = ps.syncVMDisks(nbi, nbVM, vmDisks)
+	if err != nil {
+		return fmt.Errorf("failed to sync vm's %+v disks: %s", nbVM, err)
 	}
 
 	return nil
@@ -522,6 +707,22 @@ func (ps *ProxmoxSource) syncVMNetworks(nbi *inventory.NetboxInventory, nbVM *ob
 		_, err := nbi.AddVM(ps.Ctx, &nbVMCopy)
 		if err != nil {
 			return fmt.Errorf("updating vm primary ip: %s", err)
+		}
+	}
+	return nil
+}
+
+// syncVMDisks syncs VM's disks to Netbox.
+func (ps *ProxmoxSource) syncVMDisks(
+	nbi *inventory.NetboxInventory,
+	vm *objects.VM,
+	vmDisks []*objects.VirtualDisk,
+) error {
+	for _, disk := range vmDisks {
+		disk.VM = vm
+		_, err := nbi.AddVirtualDisk(ps.Ctx, disk)
+		if err != nil {
+			return fmt.Errorf("adding VirtualDisk %+v: %s", disk, err)
 		}
 	}
 	return nil

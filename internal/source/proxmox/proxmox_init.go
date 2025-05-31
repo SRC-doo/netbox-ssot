@@ -74,23 +74,22 @@ func (ps *ProxmoxSource) initNodeNetworks(ctx context.Context, node *proxmox.Nod
 
 // Helper function for initNodes. It collects all vms for given node.
 func (ps *ProxmoxSource) initNodeVMs(ctx context.Context, node *proxmox.Node) error {
+	// Fetch VMs list
 	vms, err := node.VirtualMachines(ctx)
 	if err != nil {
 		return err
 	}
+
+	// Fetch VM config for each VM
 	ps.Vms[node.Name] = make([]*proxmox.VirtualMachine, 0, len(vms))
 	for _, vm := range vms {
-		// Fetch VM config
 		vmconfig, err := node.VirtualMachine(ctx, int(vm.VMID))
 		if err != nil {
 			return fmt.Errorf("init nodeVms: %s", err)
 		}
 
 		// Load VM disks
-		vmconfig.VirtualMachineConfig.MergeVirtIOs()
-		vmconfig.VirtualMachineConfig.MergeSATAs()
-		vmconfig.VirtualMachineConfig.MergeSCSIs()
-		vmconfig.VirtualMachineConfig.MergeIDEs()
+		vmconfig.VirtualMachineConfig.MergeDisks()
 
 		// Store VM info in our list
 		ps.Vms[node.Name] = append(ps.Vms[node.Name], vmconfig)
