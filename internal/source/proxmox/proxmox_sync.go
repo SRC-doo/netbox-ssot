@@ -353,10 +353,26 @@ func (ps *ProxmoxSource) syncVM(
 		}
 	}
 
+	newTags := ps.GetSourceTags()
+
+	if vm.Tags != "" {
+		splitTags := strings.Split(vm.Tags, ";")
+
+		for _, tag := range splitTags {
+			vmTag, _ := nbi.AddTag(ps.Ctx, &objects.Tag{
+				Name:  tag,
+				Slug:  utils.Slugify(tag),
+				Color: constants.ColorGreen,
+			})
+
+			newTags = append(newTags, vmTag)
+		}
+	}
+
 	// Add VM to Netbox
 	vmStruct := &objects.VM{
 		NetboxObject: objects.NetboxObject{
-			Tags: ps.GetSourceTags(),
+			Tags: newTags,
 			CustomFields: map[string]interface{}{
 				constants.CustomFieldSourceName:   ps.SourceConfig.Name,
 				constants.CustomFieldSourceIDName: fmt.Sprintf("%d", vm.VMID),
