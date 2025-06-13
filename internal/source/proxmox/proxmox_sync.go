@@ -374,11 +374,11 @@ func (ps *ProxmoxSource) syncVM(
 					sizeData := strings.Split(item, "=")
 					if strings.HasSuffix(sizeData[1], "G") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
-						diskSize = diskSize * constants.KB
+						diskSize *= constants.KB
 					}
 					if strings.HasSuffix(sizeData[1], "T") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
-						diskSize = diskSize * constants.MB
+						diskSize *= constants.MB
 					}
 					vmTotalDiskSizeMiB += diskSize
 				}
@@ -416,11 +416,11 @@ func (ps *ProxmoxSource) syncVM(
 					sizeData := strings.Split(item, "=")
 					if strings.HasSuffix(sizeData[1], "G") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
-						diskSize = diskSize * constants.KB
+						diskSize *= constants.KB
 					}
 					if strings.HasSuffix(sizeData[1], "T") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
-						diskSize = diskSize * constants.MB
+						diskSize *= constants.MB
 					}
 					vmTotalDiskSizeMiB += diskSize
 				}
@@ -458,11 +458,11 @@ func (ps *ProxmoxSource) syncVM(
 					sizeData := strings.Split(item, "=")
 					if strings.HasSuffix(sizeData[1], "G") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
-						diskSize = diskSize * constants.KB
+						diskSize *= constants.KB
 					}
 					if strings.HasSuffix(sizeData[1], "T") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
-						diskSize = diskSize * constants.MB
+						diskSize *= constants.MB
 					}
 					vmTotalDiskSizeMiB += diskSize
 				}
@@ -500,11 +500,11 @@ func (ps *ProxmoxSource) syncVM(
 					sizeData := strings.Split(item, "=")
 					if strings.HasSuffix(sizeData[1], "G") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "G"))
-						diskSize = diskSize * constants.KB
+						diskSize *= constants.KB
 					}
 					if strings.HasSuffix(sizeData[1], "T") {
 						diskSize, _ = strconv.Atoi(strings.TrimSuffix(sizeData[1], "T"))
-						diskSize = diskSize * constants.MB
+						diskSize *= constants.MB
 					}
 					vmTotalDiskSizeMiB += diskSize
 				}
