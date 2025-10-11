@@ -389,6 +389,14 @@ func (ps *ProxmoxSource) syncVM(
 				continue
 			}
 
+			ps.Logger.Debugf(
+				ps.Ctx,
+				"vm.Name: %s adding virtios disk: %s/%d",
+				vm.Name,
+				diskName,
+				diskSize,
+			)
+
 			vmDisks = append(vmDisks, &objects.VirtualDisk{
 				NetboxObject: objects.NetboxObject{
 					Description: diskName,
@@ -430,6 +438,14 @@ func (ps *ProxmoxSource) syncVM(
 			if diskSize == 0 {
 				continue
 			}
+
+			ps.Logger.Debugf(
+				ps.Ctx,
+				"vm.Name: %s adding scsi disk: %s/%d",
+				vm.Name,
+				diskName,
+				diskSize,
+			)
 
 			vmDisks = append(vmDisks, &objects.VirtualDisk{
 				NetboxObject: objects.NetboxObject{
@@ -473,6 +489,14 @@ func (ps *ProxmoxSource) syncVM(
 				continue
 			}
 
+			ps.Logger.Debugf(
+				ps.Ctx,
+				"vm.Name: %s adding sata disk: %s/%d",
+				vm.Name,
+				diskName,
+				diskSize,
+			)
+
 			vmDisks = append(vmDisks, &objects.VirtualDisk{
 				NetboxObject: objects.NetboxObject{
 					Description: diskName,
@@ -515,6 +539,14 @@ func (ps *ProxmoxSource) syncVM(
 				continue
 			}
 
+			ps.Logger.Debugf(
+				ps.Ctx,
+				"vm.Name: %s adding ide disk: %s/%d",
+				vm.Name,
+				diskName,
+				diskSize,
+			)
+
 			vmDisks = append(vmDisks, &objects.VirtualDisk{
 				NetboxObject: objects.NetboxObject{
 					Description: diskName,
@@ -529,6 +561,13 @@ func (ps *ProxmoxSource) syncVM(
 	if vmTotalDiskSizeMiB == 0 {
 		vmTotalDiskSizeMiB = int((vm.MaxDisk / constants.GiB) * 1000)
 	}
+
+	ps.Logger.Debugf(
+		ps.Ctx,
+		"vm.Name: %s vmTotalDiskSizeMiB: %d",
+		vm.Name,
+		vmTotalDiskSizeMiB,
+	)
 
 	// Fetch VM tags
 	newTags := ps.GetSourceTags()
@@ -571,7 +610,7 @@ func (ps *ProxmoxSource) syncVM(
 
 	nbVM, err := nbi.AddVM(ps.Ctx, vmStruct)
 	if err != nil {
-		return fmt.Errorf("failed to add vm: %s", err)
+		return fmt.Errorf("failed to add vm: %s %s", vm.Name, err)
 	}
 
 	// Sync VM networks
