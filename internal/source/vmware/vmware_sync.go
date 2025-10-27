@@ -729,6 +729,9 @@ func (vc *VmwareSource) syncHostVirtualNics(
 
 			// Get IPv4 address for this vnic
 			ipv4Address := vnic.Spec.Ip.IpAddress
+			if ipv4Address == "" {
+				continue
+			}
 			if utils.IsPermittedIPAddress(
 				ipv4Address,
 				vc.SourceConfig.PermittedSubnets,
