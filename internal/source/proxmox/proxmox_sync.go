@@ -321,6 +321,15 @@ func (ps *ProxmoxSource) syncVM(
 		platformName = vmAgentOsInfo.PrettyName
 	}
 
+	if platformName == "Unknown" {
+		switch osType := vm.VirtualMachineConfig.OSType; osType {
+		case "l26":
+			platformName = "Other 2.6.x Linux (64-bit)"
+		case "win11":
+			platformName = "Windows 11"
+		}
+	}
+
 	platformStruct := &objects.Platform{
 		Name: platformName,
 		Slug: utils.Slugify(platformName),
