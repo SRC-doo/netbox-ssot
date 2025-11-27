@@ -391,7 +391,7 @@ func addMapDiff(
 		if keyValue, ok := key.Interface().(string); ok {
 			if !existingMap.MapIndex(key).IsValid() {
 				mapsDiff[keyValue] = newMap.MapIndex(key).Interface()
-			} else if newMap.MapIndex(key).Interface() != existingMap.MapIndex(key).Interface() {
+			} else if !reflect.DeepEqual(newMap.MapIndex(key).Interface(), existingMap.MapIndex(key).Interface()) {
 				if hasPriority {
 					mapsDiff[keyValue] = newMap.MapIndex(key).Interface()
 				}
