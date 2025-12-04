@@ -133,6 +133,7 @@ type SourceConfig struct {
 	IgnoreSerialNumbers bool                 `yaml:"ignoreSerialNumbers"`
 	IgnoreVMTemplates   bool                 `yaml:"ignoreVMTemplates"`
 	AssignDomainName    string               `yaml:"assignDomainName"`
+	ContinueOnError     bool                 `yaml:"continueOnError"`
 
 	// Relations
 	DatacenterClusterGroupRelations map[string]string `yaml:"datacenterClusterGroupRelations"`
@@ -175,6 +176,7 @@ func (sc *SourceConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		IgnoreSerialNumbers             bool                 `yaml:"ignoreSerialNumbers"`
 		IgnoreAssetTags                 bool                 `yaml:"ignoreAssetTags"`
 		IgnoreVMTemplates               bool                 `yaml:"ignoreVMTemplates"`
+		ContinueOnError                 bool                 `yaml:"continueOnError"`
 		DatacenterClusterGroupRelations []string             `yaml:"datacenterClusterGroupRelations"`
 		HostSiteRelations               []string             `yaml:"hostSiteRelations"`
 		HostRoleRelations               []string             `yaml:"hostRoleRelations"`
@@ -214,6 +216,7 @@ func (sc *SourceConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	sc.IgnoreSerialNumbers = rawMarshal.IgnoreSerialNumbers
 	sc.IgnoreAssetTags = rawMarshal.IgnoreAssetTags
 	sc.IgnoreVMTemplates = rawMarshal.IgnoreVMTemplates
+	sc.ContinueOnError = rawMarshal.ContinueOnError
 
 	if len(rawMarshal.DatacenterClusterGroupRelations) > 0 {
 		err := utils.ValidateRegexRelations(rawMarshal.DatacenterClusterGroupRelations)
