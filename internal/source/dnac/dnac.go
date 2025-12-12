@@ -98,19 +98,35 @@ func (ds *DnacSource) Sync(nbi *inventory.NetboxInventory) error {
 		ds.syncMissingDevicePrimaryIPs,
 	}
 
+	var encounteredErrors []error
 	for _, syncFunc := range syncFunctions {
 		startTime := time.Now()
+		funcName := utils.ExtractFunctionNameWithTrimPrefix(syncFunc, "sync")
 		err := syncFunc(nbi)
 		if err != nil {
-			return err
+			if ds.SourceConfig.ContinueOnError {
+				ds.Logger.Errorf(
+					ds.Ctx,
+					"Error syncing %s: %s (continuing due to continueOnError flag)",
+					funcName,
+					err,
+				)
+				encounteredErrors = append(encounteredErrors, fmt.Errorf("%s: %w", funcName, err))
+			} else {
+				return err
+			}
+		} else {
+			duration := time.Since(startTime)
+			ds.Logger.Infof(
+				ds.Ctx,
+				"Successfully synced %s in %f seconds",
+				funcName,
+				duration.Seconds(),
+			)
 		}
-		duration := time.Since(startTime)
-		ds.Logger.Infof(
-			ds.Ctx,
-			"Successfully synced %s in %f seconds",
-			utils.ExtractFunctionNameWithTrimPrefix(syncFunc, "sync"),
-			duration.Seconds(),
-		)
+	}
+	if len(encounteredErrors) > 0 {
+		return fmt.Errorf("encountered %d errors during sync: %v", len(encounteredErrors), encounteredErrors)
 	}
 	return nil
 }

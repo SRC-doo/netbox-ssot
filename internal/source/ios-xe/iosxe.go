@@ -77,19 +77,35 @@ func (is *IOSXESource) Sync(nbi *inventory.NetboxInventory) error {
 		is.syncArpTable,
 	}
 
+	var encounteredErrors []error
 	for _, syncFunc := range syncFunctions {
 		startTime := time.Now()
+		funcName := utils.ExtractFunctionNameWithTrimPrefix(syncFunc, "sync")
 		err := syncFunc(nbi)
 		if err != nil {
-			return err
+			if is.SourceConfig.ContinueOnError {
+				is.Logger.Errorf(
+					is.Ctx,
+					"Error syncing %s: %s (continuing due to continueOnError flag)",
+					funcName,
+					err,
+				)
+				encounteredErrors = append(encounteredErrors, fmt.Errorf("%s: %w", funcName, err))
+			} else {
+				return err
+			}
+		} else {
+			duration := time.Since(startTime)
+			is.Logger.Infof(
+				is.Ctx,
+				"Successfully synced %s in %f seconds",
+				funcName,
+				duration.Seconds(),
+			)
 		}
-		duration := time.Since(startTime)
-		is.Logger.Infof(
-			is.Ctx,
-			"Successfully synced %s in %f seconds",
-			utils.ExtractFunctionNameWithTrimPrefix(syncFunc, "sync"),
-			duration.Seconds(),
-		)
+	}
+	if len(encounteredErrors) > 0 {
+		return fmt.Errorf("encountered %d errors during sync: %v", len(encounteredErrors), encounteredErrors)
 	}
 	return nil
 }
