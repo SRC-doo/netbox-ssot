@@ -848,6 +848,13 @@ func (nbi *NetboxInventory) AddDevice(
 	if _, ok := nbi.devicesIndexByNameAndSiteID[newDevice.Name][newDevice.Site.ID]; ok {
 		oldDevice := nbi.devicesIndexByNameAndSiteID[newDevice.Name][newDevice.Site.ID]
 		nbi.OrphanManager.RemoveItem(oldDevice)
+
+		// TODO: find a way to get device type info from proxmox
+		// This part allow manual edit of the device type
+		if newDevice.DeviceType.ID != oldDevice.DeviceType.ID && newDevice.NetboxObject.HasTagByName("proxmox") {
+			newDevice.DeviceType = oldDevice.DeviceType
+		}
+
 		diffMap, err := utils.JSONDiffMapExceptID(newDevice, oldDevice, false, nbi.SourcePriority)
 		if err != nil {
 			return nil, err
