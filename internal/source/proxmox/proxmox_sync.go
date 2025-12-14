@@ -613,8 +613,8 @@ func (ps *ProxmoxSource) syncVM(
 		Platform: vmPlatform,
 		VCPUs:    float32(vm.CPUs),
 		Memory:   int(vm.MaxMem / constants.MiB), //nolint:gosec
-		Disk:     vmTotalDiskSizeMiB,             //nolint:gosec
 		Role:     vmRole,
+		// Disk:     vmTotalDiskSizeMiB,
 	}
 
 	nbVM, err := nbi.AddVM(ps.Ctx, vmStruct)
