@@ -58,6 +58,22 @@ func (nbi *NetboxInventory) initTags(ctx context.Context) error {
 		return fmt.Errorf("error creating default orphan tag: %s", err)
 	}
 	nbi.OrphanManager.Tag = orphanTag
+
+	// Create default tag for device type overriding
+	ignoreDeviceTypeTag, err := nbi.AddTag(
+		ctx,
+		&objects.Tag{
+			Name:        constants.IgnoreDeviceTypeTagName,
+			Slug:        constants.IgnoreDeviceTypeTagName,
+			Description: constants.IgnoreDeviceTypeTagDescription,
+			Color:       constants.IgnoreDeviceTypeTagColor,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("error creating default ignore device type tag: %s", err)
+	}
+
+	nbi.IgnoreDeviceTypeTag = ignoreDeviceTypeTag
 	return nil
 }
 

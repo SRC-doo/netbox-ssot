@@ -23,6 +23,10 @@ const OrphanTagName = "netbox-ssot-orphan"
 const OrphanTagColor = ColorGrey
 const OrphanTagDescription = "Tag used by netbox-ssot to mark orphaned objects"
 
+const IgnoreDeviceTypeTagName = "netbox-ssot-ignore-device-type"
+const IgnoreDeviceTypeTagColor = ColorGrey
+const IgnoreDeviceTypeTagDescription = "Tag used by netbox-ssot to allow device type overriding"
+
 const DefaultVlanGroupName = "DefaultVlanGroup"
 
 const DefaultVlanGroupDescription = "Default netbox-ssot VlanGroup for all vlans that are not part of " +

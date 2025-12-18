@@ -33,6 +33,8 @@ type NetboxInventory struct {
 	OrphanManager *OrphanManager
 	// Tag used by netbox-ssot to mark devices that are managed by it.
 	SsotTag *objects.Tag
+	// Tag used by netbox-ssot to allow device type overriding
+	IgnoreDeviceTypeTag *objects.Tag
 	// Default context for the inventory, we use it to pass sourcename
 	// to functions for logging.
 	Ctx context.Context //nolint:containedctx
