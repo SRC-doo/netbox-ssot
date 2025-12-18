@@ -851,7 +851,9 @@ func (nbi *NetboxInventory) AddDevice(
 
 		// TODO: find a way to get device type info from proxmox
 		// This part allow manual edit of the device type
-		if newDevice.DeviceType.ID != oldDevice.DeviceType.ID && newDevice.NetboxObject.HasTagByName("proxmox") {
+		if newDevice.DeviceType != nil && oldDevice.DeviceType != nil &&
+			newDevice.DeviceType.ID != oldDevice.DeviceType.ID &&
+			newDevice.NetboxObject.HasTagByName("proxmox") {
 			newDevice.DeviceType = oldDevice.DeviceType
 		}
 
