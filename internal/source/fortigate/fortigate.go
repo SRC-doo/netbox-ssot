@@ -102,19 +102,35 @@ func (fs *FortigateSource) Sync(nbi *inventory.NetboxInventory) error {
 		fs.syncInterfaces,
 	}
 
+	var encounteredErrors []error
 	for _, syncFunc := range syncFunctions {
 		startTime := time.Now()
+		funcName := utils.ExtractFunctionNameWithTrimPrefix(syncFunc, "sync")
 		err := syncFunc(nbi)
 		if err != nil {
-			return err
+			if fs.SourceConfig.ContinueOnError {
+				fs.Logger.Errorf(
+					fs.Ctx,
+					"Error syncing %s: %s (continuing due to continueOnError flag)",
+					funcName,
+					err,
+				)
+				encounteredErrors = append(encounteredErrors, fmt.Errorf("%s: %w", funcName, err))
+			} else {
+				return err
+			}
+		} else {
+			duration := time.Since(startTime)
+			fs.Logger.Infof(
+				fs.Ctx,
+				"Successfully synced %s in %f seconds",
+				funcName,
+				duration.Seconds(),
+			)
 		}
-		duration := time.Since(startTime)
-		fs.Logger.Infof(
-			fs.Ctx,
-			"Successfully synced %s in %f seconds",
-			utils.ExtractFunctionNameWithTrimPrefix(syncFunc, "sync"),
-			duration.Seconds(),
-		)
+	}
+	if len(encounteredErrors) > 0 {
+		return fmt.Errorf("encountered %d errors during sync: %v", len(encounteredErrors), encounteredErrors)
 	}
 	return nil
 }
