@@ -850,7 +850,7 @@ func (nbi *NetboxInventory) AddDevice(
 		nbi.OrphanManager.RemoveItem(oldDevice)
 
 		// TODO: find a way to get device type info from proxmox
-		// This part allow manual edit of the device type
+		// This part allows manual edit of the device type
 		if newDevice.DeviceType != nil && oldDevice.DeviceType != nil &&
 			newDevice.DeviceType.ID != oldDevice.DeviceType.ID &&
 			newDevice.NetboxObject.HasTagByName("proxmox") {
