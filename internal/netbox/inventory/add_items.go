@@ -853,7 +853,7 @@ func (nbi *NetboxInventory) AddDevice(
 		if newDevice.DeviceType != nil && oldDevice.DeviceType != nil &&
 			newDevice.DeviceType.ID != oldDevice.DeviceType.ID &&
 			oldDevice.NetboxObject.HasTag(nbi.IgnoreDeviceTypeTag) {
-			// reset current device type and re-set tag
+			// Preserve manually set device type from NetBox and keep ignore tag
 			newDevice.DeviceType = oldDevice.DeviceType
 			newDevice.NetboxObject.AddTag(nbi.IgnoreDeviceTypeTag)
 		}
