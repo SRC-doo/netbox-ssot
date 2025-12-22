@@ -581,7 +581,7 @@ func (ps *ProxmoxSource) syncVM(
 	// Fetch VM tags
 	newTags := ps.GetSourceTags()
 
-	if vm.Tags != "" {
+	if vm.Tags != "" && vm.Tags != " " {
 		splitTags := strings.Split(vm.Tags, ";")
 
 		for _, tag := range splitTags {
