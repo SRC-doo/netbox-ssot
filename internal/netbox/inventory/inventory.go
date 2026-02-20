@@ -112,6 +112,11 @@ type NetboxInventory struct {
 	prefixesIndexByPrefix map[string]*objects.Prefix
 	prefixesLock          sync.Mutex
 
+	// vrfsIndexByName is a map of all VRFs in the Netbox's inventory,
+	// indexed by their name.
+	vrfsIndexByName map[string]*objects.VRF
+	vrfsLock        sync.Mutex
+
 	// vlanGroupsIndexByName is a map of all VlanGroups in the Netbox's inventory,
 	// indexed by their name.
 	vlanGroupsIndexByName map[string]*objects.VlanGroup
@@ -291,6 +296,7 @@ func (nbi *NetboxInventory) Init() error {
 		nbi.initMACAddresses,
 		nbi.initVlanGroups,
 		nbi.initPrefixes,
+		nbi.initVRFs,
 		nbi.initVlans,
 		nbi.initDeviceRoles,
 		nbi.initDeviceTypes,
