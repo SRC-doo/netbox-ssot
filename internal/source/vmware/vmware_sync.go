@@ -726,15 +726,15 @@ func (vc *VmwareSource) syncHostVirtualNics(
 					return fmt.Errorf("set primary mac for interface %+v: %s", nbHostVnic, err)
 				}
 			}
-			// VRF
-			ipVRF, err := common.MatchIPToVRF(vc.Ctx, nbi, ipv4Address, vc.SourceConfig.IPVrfRelations)
-			if err != nil {
-				vc.Logger.Warningf(vc.Ctx, "match ip to vrf for %s: %s", ipv4Address, err)
-			}
 			// Get IPv4 address for this vnic
 			ipv4Address := vnic.Spec.Ip.IpAddress
 			if ipv4Address == "" {
 				continue
+			}
+			// VRF
+			ipVRF, err := common.MatchIPToVRF(vc.Ctx, nbi, ipv4Address, vc.SourceConfig.IPVrfRelations)
+			if err != nil {
+				vc.Logger.Warningf(vc.Ctx, "match ip to vrf for %s: %s", ipv4Address, err)
 			}
 			if utils.IsPermittedIPAddress(
 				ipv4Address,

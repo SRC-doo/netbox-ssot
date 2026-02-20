@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/src-doo/netbox-ssot/internal/constants"
 	"github.com/src-doo/netbox-ssot/internal/netbox/inventory"

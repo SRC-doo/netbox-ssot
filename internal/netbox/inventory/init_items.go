@@ -1133,7 +1133,11 @@ func (nbi *NetboxInventory) initVirtualDisks(ctx context.Context) error {
 // initVRFs collects all VRF from Netbox API
 // and stores them to local inventory.
 func (nbi *NetboxInventory) initVRFs(ctx context.Context) error {
-	nbVRFs, err := service.GetAll[objects.VRF](ctx, nbi.NetboxAPI, "/api/ipam/vrfs/")
+	extraArgs := fmt.Sprintf(
+		"&fields=%s",
+		utils.ExtractJSONTagsFromStructIntoString(objects.VRF{}),
+	)
+	nbVRFs, err := service.GetAll[objects.VRF](ctx, nbi.NetboxAPI, extraArgs)
 	if err != nil {
 		return fmt.Errorf("get all vrfs: %s", err)
 	}
@@ -1142,5 +1146,10 @@ func (nbi *NetboxInventory) initVRFs(ctx context.Context) error {
 		vrf := &nbVRFs[i]
 		nbi.vrfsIndexByName[vrf.Name] = vrf
 	}
+	nbi.Logger.Debug(
+	ctx,
+	"Successfully collected VRF from Netbox: ",
+	nbi.vrfsIndexByName,
+	)
 	return nil
 }
