@@ -271,7 +271,6 @@ func mergeTagSlices(
 			default:
 				return nil, false, fmt.Errorf("existing tag slice contains non-Tag element")
 			}
-			// Conserver le tag s'il n'est pas un tag source ET qu'il n'est pas déjà dans la liste
 			isManagedBySource := strings.HasPrefix(tag.Name, "Source: ") ||
 				tag.Name == constants.SsotTagName ||
 				tag.Name == constants.OrphanTagName ||
@@ -283,7 +282,6 @@ func mergeTagSlices(
 		}
 	}
 
-	// Vérifier si la liste a changé par rapport à existingSlice
 	existingIDs := make(map[int]bool)
 	if existingSlice.IsValid() {
 		for i := 0; i < existingSlice.Len(); i++ {
