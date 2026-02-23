@@ -108,8 +108,8 @@ type NetboxInventory struct {
 	virtualDeviceContextsLock  sync.Mutex
 
 	// prefixesIndexByPrefix is a map of all prefixes in the Netbox's inventory,
-	// indexed by their prefix.
-	prefixesIndexByPrefix map[string]*objects.Prefix
+	// indexed by their prefix and VRF
+	prefixesIndexByPrefix map[string]map[int]*objects.Prefix
 	prefixesLock          sync.Mutex
 
 	// vrfsIndexByName is a map of all VRFs in the Netbox's inventory,

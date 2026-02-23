@@ -493,6 +493,7 @@ func (nbi *NetboxInventory) initSsotCustomFields(ctx context.Context) error {
 			constants.ContentTypeIpamVlanGroup,
 			constants.ContentTypeIpamVlan,
 			constants.ContentTypeIpamPrefix,
+			constants.ContentTypeIpamVRF,
 			constants.ContentTypeTenancyTenantGroup,
 			constants.ContentTypeTenancyTenant,
 			constants.ContentTypeTenancyContact,
@@ -540,6 +541,7 @@ func (nbi *NetboxInventory) initSsotCustomFields(ctx context.Context) error {
 			constants.ContentTypeIpamVlanGroup,
 			constants.ContentTypeIpamVlan,
 			constants.ContentTypeIpamPrefix,
+			constants.ContentTypeIpamVRF,
 			constants.ContentTypeTenancyTenantGroup,
 			constants.ContentTypeTenancyTenant,
 			constants.ContentTypeTenancyContact,
@@ -587,6 +589,7 @@ func (nbi *NetboxInventory) initSsotCustomFields(ctx context.Context) error {
 			constants.ContentTypeIpamVlanGroup,
 			constants.ContentTypeIpamVlan,
 			constants.ContentTypeIpamPrefix,
+			constants.ContentTypeIpamVRF,
 			constants.ContentTypeTenancyTenantGroup,
 			constants.ContentTypeTenancyTenant,
 			constants.ContentTypeTenancyContact,
@@ -959,7 +962,6 @@ func (nbi *NetboxInventory) initIPAddresses(ctx context.Context) error {
 		return err
 	}
 
-	// Initializes internal index
 	nbi.ipAddressesIndex = make(
 		map[constants.ContentType]map[string]map[string]map[string]*objects.IPAddress,
 	)
@@ -970,7 +972,8 @@ func (nbi *NetboxInventory) initIPAddresses(ctx context.Context) error {
 			return fmt.Errorf("get index values for ip address: %s", err)
 		}
 		nbi.verifyIPAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
-		nbi.ipAddressesIndex[ifaceType][ifaceName][ifaceParentName][ipAddr.Address] = ipAddr
+		indexKey := ipAddressIndexKey(ipAddr)
+		nbi.ipAddressesIndex[ifaceType][ifaceName][ifaceParentName][indexKey] = ipAddr
 		nbi.OrphanManager.AddItem(ipAddr)
 	}
 
@@ -1027,12 +1030,18 @@ func (nbi *NetboxInventory) initPrefixes(ctx context.Context) error {
 		return err
 	}
 
-	// Initializes internal index of prefixes by prefix
-	nbi.prefixesIndexByPrefix = make(map[string]*objects.Prefix)
+	nbi.prefixesIndexByPrefix = make(map[string]map[int]*objects.Prefix)
 
 	for i := range prefixes {
 		prefix := &prefixes[i]
-		nbi.prefixesIndexByPrefix[prefix.Prefix] = prefix
+		vrfID := 0
+		if prefix.VRF != nil {
+			vrfID = prefix.VRF.ID
+		}
+		if nbi.prefixesIndexByPrefix[prefix.Prefix] == nil {
+			nbi.prefixesIndexByPrefix[prefix.Prefix] = make(map[int]*objects.Prefix)
+		}
+		nbi.prefixesIndexByPrefix[prefix.Prefix][vrfID] = prefix
 		nbi.OrphanManager.AddItem(prefix)
 	}
 
@@ -1145,6 +1154,7 @@ func (nbi *NetboxInventory) initVRFs(ctx context.Context) error {
 	for i := range nbVRFs {
 		vrf := &nbVRFs[i]
 		nbi.vrfsIndexByName[vrf.Name] = vrf
+		nbi.OrphanManager.AddItem(vrf)
 	}
 	nbi.Logger.Debug(
 	ctx,
