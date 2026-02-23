@@ -211,6 +211,97 @@ func JSONDiffMapExceptID(
 	return diff, nil
 }
 
+// mergeTagSlices merges two slices of *objects.Tag.
+// It keeps all tags from existingSlice that are NOT managed by netbox-ssot
+// (i.e. tags whose name does not start with "Source:"),
+// and replaces/adds all tags from newSlice.
+// Returns the merged slice as []IDObject, whether it changed, and an error.
+func mergeTagSlices(
+	newSlice reflect.Value,
+	existingSlice reflect.Value,
+) ([]IDObject, bool, error) {
+	// Collect new tags into a map by ID for deduplication
+	newTagsByID := make(map[int]*objects.Tag)
+	for i := 0; i < newSlice.Len(); i++ {
+		elem := newSlice.Index(i)
+		if elem.Kind() == reflect.Ptr {
+			elem = elem.Elem()
+		}
+		tag, ok := newSlice.Index(i).Interface().(*objects.Tag)
+		if !ok {
+			// Try non-pointer
+			tagVal, ok2 := elem.Interface().(objects.Tag)
+			if !ok2 {
+				return nil, false, fmt.Errorf("tag slice contains non-Tag element")
+			}
+			newTagsByID[tagVal.ID] = &tagVal
+		} else {
+			newTagsByID[tag.ID] = tag
+		}
+	}
+
+	// Collect IDs of new tags for quick lookup
+	newTagIDs := make(map[int]bool, len(newTagsByID))
+	for id := range newTagsByID {
+		newTagIDs[id] = true
+	}
+
+	// Build merged list: start with new tags
+	mergedIDs := make(map[int]bool)
+	result := make([]IDObject, 0)
+	for id := range newTagsByID {
+		mergedIDs[id] = true
+		result = append(result, IDObject{ID: id})
+	}
+
+	// Add existing tags that are NOT managed by netbox-ssot source tagging
+	// A tag is considered "managed by source" if its name starts with "Source: "
+	if existingSlice.IsValid() {
+		for i := 0; i < existingSlice.Len(); i++ {
+			elem := existingSlice.Index(i)
+			if elem.Kind() == reflect.Ptr {
+				elem = elem.Elem()
+			}
+			var tag objects.Tag
+			switch v := existingSlice.Index(i).Interface().(type) {
+			case *objects.Tag:
+				tag = *v
+			case objects.Tag:
+				tag = v
+			default:
+				return nil, false, fmt.Errorf("existing tag slice contains non-Tag element")
+			}
+			// Conserver le tag s'il n'est pas un tag source ET qu'il n'est pas déjà dans la liste
+			isManagedBySource := strings.HasPrefix(tag.Name, "Source: ") ||
+				tag.Name == constants.SsotTagName ||
+				tag.Name == constants.OrphanTagName ||
+				tag.Name == constants.IgnoreDeviceTypeTagName
+			if !isManagedBySource && !mergedIDs[tag.ID] {
+				mergedIDs[tag.ID] = true
+				result = append(result, IDObject{ID: tag.ID})
+			}
+		}
+	}
+
+	// Vérifier si la liste a changé par rapport à existingSlice
+	existingIDs := make(map[int]bool)
+	if existingSlice.IsValid() {
+		for i := 0; i < existingSlice.Len(); i++ {
+			elem := existingSlice.Index(i)
+			if elem.Kind() == reflect.Ptr {
+				elem = elem.Elem()
+			}
+			idField := elem.FieldByName("ID")
+			if idField.IsValid() {
+				existingIDs[int(idField.Int())] = true
+			}
+		}
+	}
+	changed := !reflect.DeepEqual(mergedIDs, existingIDs)
+
+	return result, changed, nil
+}
+
 // Function that takes two objects (of type slice) and returns a map
 // that can be easily used with json.Marshal
 // To achieve this the map is of the following format:
@@ -226,12 +317,10 @@ func addSliceDiff(
 	hasPriority bool,
 	diffMap map[string]interface{},
 ) error {
-	// If new slice doesn't have priority don't do anything
 	if !hasPriority {
 		return nil
 	}
 
-	// If first slice is nil but second is not that means that we reset the value.
 	if !newSlice.IsValid() || newSlice.Len() == 0 {
 		if existingSlice.IsValid() && existingSlice.Len() > 0 {
 			diffMap[jsonTag] = []interface{}{}
@@ -239,32 +328,34 @@ func addSliceDiff(
 		return nil
 	}
 
-	// Convert slices to comparable slices (e.g. slices containging structs with ids, to only slices
-	// of ids.)
+	// Merge tags
+	if jsonTag == "tags" {
+		mergedTags, changed, err := mergeTagSlices(newSlice, existingSlice)
+		if err != nil {
+			return fmt.Errorf("merge tag slices: %s", err)
+		}
+		if changed {
+			diffMap[jsonTag] = mergedTags
+		}
+		return nil
+	}
+
 	newSlice, err := convertSliceToComparableSlice(newSlice)
 	if err != nil {
 		return fmt.Errorf("error converting slice to comparable slice: %s", err)
 	}
-
-	// If second slice is empty or not valid set new
 	if !existingSlice.IsValid() || existingSlice.Len() == 0 {
 		diffMap[jsonTag] = newSlice.Interface()
 		return nil
 	}
-
 	existingSlice, err = convertSliceToComparableSlice(existingSlice)
 	if err != nil {
 		return fmt.Errorf("error converting slice to comparable slice: %s", err)
 	}
-
-	// Convert slices to sets for comparison
 	newSet := sliceToSet(newSlice)
 	existingSet := sliceToSet(existingSlice)
-
-	// Compare if slices are the same
 	if !reflect.DeepEqual(newSet, existingSet) {
 		diffMap[jsonTag] = newSlice.Interface()
-		return nil
 	}
 	return nil
 }
