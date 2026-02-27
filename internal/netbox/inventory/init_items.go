@@ -969,6 +969,10 @@ func (nbi *NetboxInventory) initIPAddresses(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("get index values for ip address: %s", err)
 		}
+		// Skip IP addresses whose assigned interface is not in inventory
+		if ipAddr.AssignedObjectType != "" && ifaceType == "" {
+			continue
+		}
 		nbi.verifyIPAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
 		nbi.ipAddressesIndex[ifaceType][ifaceName][ifaceParentName][ipAddr.Address] = ipAddr
 		nbi.OrphanManager.AddItem(ipAddr)
@@ -1002,6 +1006,10 @@ func (nbi *NetboxInventory) initMACAddresses(ctx context.Context) error {
 		)
 		if err != nil {
 			return fmt.Errorf("get index values for mac address: %s", err)
+		}
+		// Skip MAC addresses whose assigned interface is not in inventory
+		if macAddress.AssignedObjectType != "" && ifaceType == "" {
+			continue
 		}
 		nbi.verifyMACAddressIndexExists(ifaceType, ifaceName, ifaceParentName)
 		nbi.macAddressesIndex[ifaceType][ifaceName][ifaceParentName][macAddress.MAC] = macAddress
