@@ -55,10 +55,7 @@ func (nbi *NetboxInventory) getIndexValuesForIPAddress(
 			ipIfaceType = constants.ContentTypeDcimDevice
 			ipIface := nbi.GetInterfaceByID(ipAddr.AssignedObjectID)
 			if ipIface == nil {
-				return "", "", "", fmt.Errorf(
-					"assigned object not found for ip address %+v",
-					ipAddr,
-				)
+				return "", "", "", nil // Skip — interface not in inventory
 			}
 			ipIfaceName = ipIface.Name
 			if ipIface.Device != nil {
@@ -68,10 +65,7 @@ func (nbi *NetboxInventory) getIndexValuesForIPAddress(
 			ipIfaceType = constants.ContentTypeVirtualizationVirtualMachine
 			ipIface := nbi.GetVMInterfaceByID(ipAddr.AssignedObjectID)
 			if ipIface == nil {
-				return "", "", "", fmt.Errorf(
-					"assigned object not found for ip address %+v",
-					ipAddr,
-				)
+				return "", "", "", nil // Skip — interface not in inventory
 			}
 			ipIfaceName = ipIface.Name
 			if ipIface.VM != nil {
@@ -99,10 +93,7 @@ func (nbi *NetboxInventory) getIndexValuesForMACAddress(
 			macIfaceType = constants.ContentTypeDcimDevice
 			macIface := nbi.GetInterfaceByID(macAddr.AssignedObjectID)
 			if macIface == nil {
-				return "", "", "", fmt.Errorf(
-					"assigned object not found for mac address %+v",
-					macAddr,
-				)
+				return "", "", "", nil // Skip — interface not in inventory
 			}
 			macIfaceName = macIface.Name
 			if macIface.Device != nil {
@@ -112,10 +103,7 @@ func (nbi *NetboxInventory) getIndexValuesForMACAddress(
 			macIfaceType = constants.ContentTypeVirtualizationVirtualMachine
 			macIface := nbi.GetVMInterfaceByID(macAddr.AssignedObjectID)
 			if macIface == nil {
-				return "", "", "", fmt.Errorf(
-					"assigned object not found for mac address %+v",
-					macAddr,
-				)
+				return "", "", "", nil // Skip — interface not in inventory
 			}
 			macIfaceName = macIface.Name
 			if macIface.VM != nil {

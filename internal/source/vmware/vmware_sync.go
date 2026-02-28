@@ -1080,6 +1080,9 @@ func (vc *VmwareSource) syncVM(
 		return fmt.Errorf("vm's Site: %s", err)
 	}
 	vmHost, _ := nbi.GetDevice(vmHostName, vmSite.ID)
+	if vmHost == nil {
+		return fmt.Errorf("host device %q not found in site %d, skipping VM", vmHostName, vmSite.ID)
+	}
 
 	// Cluster of the vm is same as the host
 	vmCluster := vmHost.Cluster
